@@ -9,7 +9,7 @@ type StickerItem = { name: StickerName; label: string };
 const productionHost = process.env.NEXT_PUBLIC_SITE_URL ?? process.env.VERCEL_PROJECT_PRODUCTION_URL;
 
 export const SITE = {
-  url: productionHost ? `https://${productionHost.replace(/^https?:\/\//, "")}` : "https://bilalmessaoudi-landing-page.vercel.app",
+  url: productionHost ? `https://${productionHost.replace(/^https?:\/\//, "")}` : "https://www.bilalmessaoudi.it",
   email: "bilelmessaudi@gmail.com",
   github: "https://github.com/bmessaoudi",
   linkedin: "https://www.linkedin.com/in/bilal-messaoudi-877a6a183",
@@ -136,6 +136,7 @@ const it = {
     copied: "Copiato",
     call: "Chiedi una call",
     callSubject: "Una call per un progetto",
+    signoff: "a presto!",
     credits: "Stanza modellata e cotta in Blender. Clawd è la mascotte di Claude Code di Anthropic.",
   },
   sheet: {
@@ -269,6 +270,7 @@ const en: Copy = {
     copied: "Copied",
     call: "Ask for a call",
     callSubject: "A call about a project",
+    signoff: "talk soon!",
     credits: "Room modelled and baked in Blender. Clawd is the Claude Code mascot by Anthropic.",
   },
   sheet: {

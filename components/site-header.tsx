@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Copy } from "@/lib/content/copy";
 import type { Locale, SectionId } from "@/lib/content/types";
+import { Logo } from "./doodles";
 
 type Props = { copy: Copy; locale: Locale; active: SectionId; paper: boolean; inert: boolean };
 
@@ -16,8 +17,11 @@ export function SiteHeader({ copy, locale, active, paper, inert }: Props) {
         paper ? "bg-paper text-ink" : "bg-gradient-to-b from-[rgb(15_17_23/0.7)] to-transparent text-light"
       }`}
     >
-      <a href="#ciao" className="font-bold tracking-[-0.01em] no-underline hover:text-lamp-ink">
-        Bilal Messaoudi <span className={`hidden font-normal wide:inline ${soft}`}>devbybil</span>
+      <a href="#ciao" aria-label="devbybil, Bilal Messaoudi" className="flex items-center gap-3 no-underline">
+        <Logo className={`h-8 transition-colors wide:h-9 ${paper ? "text-lamp-ink" : "text-lamp"}`} />
+        <span aria-hidden="true" className={`hidden text-sm wide:inline ${soft}`}>
+          Bilal Messaoudi
+        </span>
       </a>
       <nav aria-label={copy.nav.sections} className="ml-auto flex items-baseline gap-3.5 text-sm wide:gap-6 wide:text-[15px]">
         {LINKS.map((id) => (

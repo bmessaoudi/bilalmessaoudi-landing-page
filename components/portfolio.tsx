@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { Copy } from "@/lib/content/copy";
 import type { Locale, Project, SectionId } from "@/lib/content/types";
 import type { Room } from "@/lib/scene/room";
+import { Logo } from "./doodles";
 import { ProjectSheet } from "./project-sheet";
 import { Sections } from "./sections";
 import { SiteHeader } from "./site-header";
@@ -246,9 +247,10 @@ export function Portfolio({ locale, copy, projects, fonts }: Props) {
         />
         <div ref={scrimRef} className="scrim pointer-events-none absolute inset-0" />
         {status !== "ready" && (
-          <p className="absolute top-[45%] left-1/2 -translate-x-1/2 font-mono text-[13px] text-light-soft" role="status">
-            {status === "loading" ? copy.loading : copy.noWebgl}
-          </p>
+          <div className="absolute top-[40%] left-1/2 flex -translate-x-1/2 flex-col items-center gap-4 text-center" role="status">
+            <Logo className={`h-14 text-lamp ${status === "loading" ? "animate-pulse" : ""}`} />
+            <p className="font-mono text-[13px] text-light-soft">{status === "loading" ? copy.loading : copy.noWebgl}</p>
+          </div>
         )}
       </div>
 

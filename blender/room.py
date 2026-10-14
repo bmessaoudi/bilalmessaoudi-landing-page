@@ -766,6 +766,7 @@ wc = wheel_top - Vector((0, 0, wheel_r - 0.0022))
 wheel = rod("mouse_wheel", (wc.x - 0.0032, wc.z, -wc.y), (wc.x + 0.0032, wc.z, -wc.y), wheel_r, M["rubber"], "props", verts=28)
 bevel(wheel, 0.0012, 2)
 mouse = join("mouse", mouse_parts + [wheel])
+mouse["uv_density"] = 2.0  # a smooth shell this small shows its uv seams at the default density
 # a dark core just under the shell, seen through the seams and the wheel slot. It stays out of the
 # atlas (the site draws unbaked meshes flat dark), so no black islands sit next to the shell's
 mouse_core = mouse_part("mouse_core", lambda c: True, lambda u: mouse_shape(u, 0.965), lambda u: u, M["plastic_black"], "")
@@ -1343,6 +1344,12 @@ def unwrap(objs):
         uvl = bm.loops.layers.uv["bake"]
         k = o.get("uv_scale", 1.0)
         spine = o.get("spine_face")
+        # small curved props close to the camera ask for more texels as a whole (islands stay intact)
+        dens = o.get("uv_density", 1.0)
+        if dens != 1.0:
+            for f in bm.faces:
+                for l in f.loops:
+                    l[uvl].uv *= dens
         for f in bm.faces:
             kk = k * (2.6 if spine is not None and f.material_index == spine else 1.0)
             if kk == 1.0:

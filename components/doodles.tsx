@@ -181,3 +181,16 @@ export function StickerDefs() {
     </svg>
   );
 }
+
+// ---------------------------------------------------------------- logo
+
+/** The devbybil signature. One SVG used as a mask, so it takes the colour of the text around it. */
+export function Logo({ className = "" }: { className?: string }) {
+  return (
+    <span
+      role="img"
+      aria-label="devbybil"
+      className={`inline-block aspect-[3.216] bg-current align-middle [mask:url(/brand/devbybil.svg)_center/contain_no-repeat] ${className}`}
+    />
+  );
+}

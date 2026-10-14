@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { SITE, type Copy } from "@/lib/content/copy";
 import type { Project, Status } from "@/lib/content/types";
-import { Doodle, Marked, Note, Sticker, StickerDefs } from "./doodles";
+import { Doodle, Logo, Marked, Note, Sticker, StickerDefs } from "./doodles";
 
 type Props = {
   copy: Copy;
@@ -169,7 +169,11 @@ export function Sections({ copy, projects, inert, onOpen, onHighlight }: Props) 
               LinkedIn
             </a>
           </p>
-          <p className="mt-10 text-xs text-light-soft">{copy.contatti.credits}</p>
+          <p className="mt-10 flex flex-col items-start gap-1">
+            <span className="font-hand ml-1 text-light-soft">{copy.contatti.signoff}</span>
+            <Logo className="h-12 -rotate-3 text-lamp wide:h-14" />
+          </p>
+          <p className="mt-8 text-xs text-light-soft">{copy.contatti.credits}</p>
         </div>
       </section>
     </main>
