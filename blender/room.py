@@ -1011,6 +1011,44 @@ for i, (ox, oy, nw, nh, m) in enumerate(notes):
     board += [n_, pin]
 join("pinboard", board)
 
+# ---------------------------------------------------------------- tech posters
+
+# Three framed prints left of the pinboard, drawn by blender/export-tech.mts from the site's
+# technology list. They bake into their own small atlas so the logos stay sharp.
+POSTERS = [
+    # image, centre x, centre y, width, height (the image keeps the same aspect)
+    ("poster_main", -0.62, 1.68, 0.46, 0.62),
+    ("poster_b", -1.15, 1.82, 0.30, 0.357),
+    ("poster_c", -1.15, 1.40, 0.30, 0.323),
+]
+FR = 0.016  # frame moulding width
+
+
+def poster_mat(name):
+    n = N(name)
+    tex = n.node("ShaderNodeTexImage")
+    tex.image = bpy.data.images.load(os.path.join(HERE, "posters", f"{name}.png"))
+    uv = n.node("ShaderNodeUVMap")
+    uv.uv_map = "label"
+    n.link(uv.outputs["UV"], tex.inputs["Vector"])
+    n.link(tex.outputs["Color"], n.bsdf.inputs["Base Color"])
+    n.set("Roughness", 0.7)
+    return n.m
+
+
+for name, px, py, pw, ph in POSTERS:
+    parts = [
+        box(f"{name}_t", (pw + 2 * FR, FR, 0.02), (px, py + ph / 2 + FR / 2, WALL_Z + 0.01), M["plastic_black"], "posters", bev=0.002),
+        box(f"{name}_b", (pw + 2 * FR, FR, 0.02), (px, py - ph / 2 - FR / 2, WALL_Z + 0.01), M["plastic_black"], "posters", bev=0.002),
+        box(f"{name}_l", (FR, ph, 0.02), (px - pw / 2 - FR / 2, py, WALL_Z + 0.01), M["plastic_black"], "posters", bev=0.002),
+        box(f"{name}_r", (FR, ph, 0.02), (px + pw / 2 + FR / 2, py, WALL_Z + 0.01), M["plastic_black"], "posters", bev=0.002),
+    ]
+    join(f"{name}_frame", parts)
+    art = plane(name, pw, ph, (px, py, WALL_Z + 0.014), poster_mat(name), "posters", "+z")
+    art.data.uv_layers[0].name = "label"
+    # the print gets more texels than the frame
+    art["uv_scale"] = 2.2
+
 # ---------------------------------------------------------------- bookshelf
 
 sx_, sw, sh, sd, st = SHELF["x"], SHELF["w"], SHELF["h"], SHELF["d"], SHELF["t"]
@@ -1279,6 +1317,7 @@ fo.location = V(0.4, CEIL - 0.02, 1.4)
 POSES = {
     "ciao": ((1.55, 1.75, 3.35), (0.4, 0.88, -0.3), 38),
     "lavori": ((0.62, 1.12, 2.15), (1.3, 0.98, -0.45), 46),
+    "posters": ((-0.3, 1.6, 1.4), (-0.85, 1.6, -0.62), 46),
     "metodo": ((-0.12, 1.32, 0.62), (-0.22, 1.0, -0.42), 46),
     "chi": ((0.55, 1.05, 0.55), (0.2, 0.86, -0.3), 46),
     "contatti": ((-0.25, 1.9, 2.2), (-0.4, 0.9, -0.2), 38),
@@ -1362,8 +1401,13 @@ def unwrap(objs):
     bpy.ops.object.mode_set(mode="OBJECT")
 
 
+# the posters fill a small atlas on their own; everything else uses the full size
+ATLAS_RES = {"posters": RES // 2}
+
+
 def bake(name, objs):
-    size = RES * SS
+    res = ATLAS_RES.get(name, RES)
+    size = res * SS
     img = bpy.data.images.new(f"bake_{name}", size, size, float_buffer=True, alpha=False)
     for o in objs:
         # every object gets its own copy of its materials so the target node is unique
@@ -1395,7 +1439,7 @@ def bake(name, objs):
     out = bpy.data.images.load(path, check_existing=False)
     out.name = f"room_{name}"
     if SS > 1:
-        out.scale(RES, RES)
+        out.scale(res, res)
     return out
 
 
@@ -1457,5 +1501,5 @@ models = os.path.join(ROOT, "public", "models")
 export(os.path.join(models, "room.glb"))
 # phones get half size textures
 for img in baked.values():
-    img.scale(RES // 2, RES // 2)
+    img.scale(img.size[0] // 2, img.size[1] // 2)
 export(os.path.join(models, "room-mobile.glb"))

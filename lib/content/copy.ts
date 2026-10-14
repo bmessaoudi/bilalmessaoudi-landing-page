@@ -1,4 +1,5 @@
 import type { IconName, StickerName } from "@/components/doodles";
+import type { TechArea } from "./tech";
 import type { GroupId, Locale, LogLine, Owner, Status } from "./types";
 
 type Step = { icon: IconName; title: string; text: string; note?: string };
@@ -19,7 +20,7 @@ const it = {
   meta: {
     title: "Bilal Messaoudi, sviluppatore full stack",
     description:
-      "Gestionali, siti e agenti AI per aziende. Sviluppatore full stack freelance: progetti, metodo di lavoro e contatti.",
+      "Gestionali, siti e agenti AI per aziende, con Next.js, FastAPI e Claude. Sviluppatore full stack freelance: progetti, metodo di lavoro e contatti.",
   },
   nav: { lavori: "Lavori", metodo: "Metodo", chi: "Chi sono", contatti: "Contatti", sections: "Sezioni" },
   otherLocale: { label: "EN", href: "/en", name: "English" },
@@ -65,6 +66,23 @@ const it = {
     mine: "le idee che provo la sera e nei weekend",
   } satisfies Record<Owner, string>,
   soon: "foto in arrivo",
+  tech: {
+    title: "Con cosa lavoro",
+    lead: "Scelgo gli strumenti in base al progetto, ma questi sono quelli che tornano più spesso. Il numerino accanto dice in quanti dei progetti qui sopra compare.",
+    hint: {
+      wide: "passaci sopra e si accendono i libri",
+      touch: "toccane uno e si accendono i libri",
+    },
+    areas: {
+      web: "Siti e interfacce",
+      backend: "Backend e dati",
+      ai: "AI e agenti",
+      apps: "App e 3D",
+      services: "Pagamenti, contenuti e messaggi",
+    } satisfies Record<TechArea, string>,
+    // the copy crosses into client components, so no functions here
+    count: { one: "in 1 progetto", many: "in {n} progetti" },
+  },
   metodo: {
     title: "Come lavoro",
     steps: [
@@ -167,7 +185,7 @@ const en: Copy = {
   meta: {
     title: "Bilal Messaoudi, full stack developer",
     description:
-      "Business software, websites and AI agents for companies. Freelance full stack developer: projects, process and contact.",
+      "Business software, websites and AI agents for companies, built with Next.js, FastAPI and Claude. Freelance full stack developer: projects, process and contact.",
   },
   nav: { lavori: "Work", metodo: "Process", chi: "About", contatti: "Contact", sections: "Sections" },
   otherLocale: { label: "IT", href: "/", name: "Italiano" },
@@ -199,6 +217,22 @@ const en: Copy = {
   statusNote: "Clients are not named, and logos and brands in the screenshots are covered.",
   ownerNotes: { client: "used every day by real people", mine: "ideas I try out in the evenings and at weekends" },
   soon: "photos soon",
+  tech: {
+    title: "What I work with",
+    lead: "I pick the tools for each project, but these are the ones that keep coming back. The small number next to each one says how many of the projects above use it.",
+    hint: {
+      wide: "hover one and the books light up",
+      touch: "tap one and the books light up",
+    },
+    areas: {
+      web: "Sites and interfaces",
+      backend: "Backend and data",
+      ai: "AI and agents",
+      apps: "Apps and 3D",
+      services: "Payments, content and messaging",
+    },
+    count: { one: "in 1 project", many: "in {n} projects" },
+  },
   metodo: {
     title: "How I work",
     steps: [

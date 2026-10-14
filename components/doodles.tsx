@@ -10,7 +10,7 @@ export function Marked({ text }: { text: string }) {
 
 // ---------------------------------------------------------------- notes
 
-type ArrowDir = "up" | "left" | "down" | "scroll";
+type ArrowDir = "up" | "left" | "down" | "scroll" | "next";
 
 const ARROWS: Record<ArrowDir, { box: string; path: string; head: string; className: string }> = {
   // from the note up to the line above
@@ -20,6 +20,8 @@ const ARROWS: Record<ArrowDir, { box: string; path: string; head: string; classN
   // from the note down to what follows
   // from the start of the note down the page, for "scroll"
   scroll: { box: "0 0 40 56", path: "M30 4C10 10 6 30 14 50", head: "M15.3 41.1 14 50l-7.1-5.6", className: "top-1 -left-11 h-[56px] w-[40px]" },
+  // a short hook on the left, from the note down to the list right under it
+  next: { box: "0 0 32 34", path: "M28 5C13 6 6 15 8 29", head: "M2.6 23.6 8 30.5l5.2-6.9", className: "top-1.5 -left-10 h-[30px] w-[28px]" },
   down: { box: "0 0 40 46", path: "M6 4c18 4 26 18 24 36", head: "M23 34l7 8 6-9", className: "-bottom-11 left-6 h-[46px] w-[40px]" },
 };
 

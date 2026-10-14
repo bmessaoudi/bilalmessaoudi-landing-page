@@ -5,7 +5,7 @@ import { Logo } from "./doodles";
 
 type Props = { copy: Copy; locale: Locale; active: SectionId; paper: boolean; inert: boolean };
 
-const LINKS: Exclude<SectionId, "ciao">[] = ["lavori", "metodo", "chi", "contatti"];
+const LINKS: Exclude<SectionId, "ciao" | "stack">[] = ["lavori", "metodo", "chi", "contatti"];
 
 // a slightly uneven line of labels, as if written by hand
 const TILT = [-2, 1.5, -1, 2];

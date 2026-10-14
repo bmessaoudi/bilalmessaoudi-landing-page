@@ -1,3 +1,5 @@
+import type { TechId } from "./tech";
+
 export type Locale = "it" | "en";
 
 export type Shot = {
@@ -22,6 +24,7 @@ export type Project = {
   year: number;
   owner: Owner;
   status: Status;
+  stack: TechId[];
   body: string[];
   facts: { label: string; value: string; todo?: boolean }[];
   shots: Shot[];
@@ -33,6 +36,6 @@ export type Status = "production" | "delivered" | "development" | "demo";
 
 export type GroupId = "ai" | "business" | "experiences" | "mine";
 
-export type SectionId = "ciao" | "lavori" | "metodo" | "chi" | "contatti";
+export type SectionId = "ciao" | "lavori" | "stack" | "metodo" | "chi" | "contatti";
 
 export type LogLine = { kind: "$" | ">" | "·" | " "; text: string };

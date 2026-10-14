@@ -18,9 +18,9 @@ type Props = {
 
 type SceneStatus = "loading" | "ready" | "unavailable";
 
-const SECTIONS: SectionId[] = ["ciao", "lavori", "metodo", "chi", "contatti"];
+const SECTIONS: SectionId[] = ["ciao", "lavori", "stack", "metodo", "chi", "contatti"];
 // 0: the room fills the screen, 1: the room sits in a window and the page is paper
-const WINDOWED: Record<SectionId, number> = { ciao: 0, lavori: 1, metodo: 1, chi: 1, contatti: 0 };
+const WINDOWED: Record<SectionId, number> = { ciao: 0, lavori: 1, stack: 1, metodo: 1, chi: 1, contatti: 0 };
 
 type Rect = { x: number; y: number; w: number; h: number };
 const WIDE = 760;
@@ -276,7 +276,7 @@ export function Portfolio({ locale, copy, projects, fonts }: Props) {
         </div>
       )}
 
-      <SiteHeader copy={copy} locale={locale} active={active} paper={paper} inert={sheetOpen} />
+      <SiteHeader copy={copy} locale={locale} active={active === "stack" ? "lavori" : active} paper={paper} inert={sheetOpen} />
 
       <Sections
         copy={copy}
@@ -291,6 +291,12 @@ export function Portfolio({ locale, copy, projects, fonts }: Props) {
           // in the window the camera walks to the book; on phones the book just slides out
           if (paper && innerWidth >= WIDE) room.focusBook(i);
           else room.highlightBook(i);
+        }}
+        onHighlightMany={(list) => {
+          const room = roomRef.current;
+          if (!room || sheetOpen) return;
+          room.focusBook(null);
+          room.highlightBook(list);
         }}
       />
 

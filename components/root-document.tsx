@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import { getCopy, SITE } from "@/lib/content/copy";
+import { TECH, TECH_IDS } from "@/lib/content/tech";
 import type { Locale } from "@/lib/content/types";
 import { display, hand, mono, sans } from "@/lib/fonts";
 
@@ -48,7 +49,7 @@ export function RootDocument({ locale, children }: { locale: Locale; children: R
     url: SITE.url,
     email: SITE.email,
     sameAs: [SITE.github, SITE.linkedin],
-    knowsAbout: ["Next.js", "TypeScript", "Node.js", "FastAPI", "Claude API", "Model Context Protocol", "three.js", "Blender"],
+    knowsAbout: TECH_IDS.map((id) => TECH[id].name),
   };
   return (
     <html lang={locale} className={`${sans.variable} ${display.variable} ${hand.variable} ${mono.variable}`}>

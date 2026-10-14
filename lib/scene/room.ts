@@ -29,8 +29,8 @@ export type Room = {
   setPose: (from: SectionId, to: SectionId, k: number, active: SectionId) => void;
   /** The part of the screen the room is visible in (CSS px). The camera frames the room inside it. */
   setFrame: (frame: Frame) => void;
-  /** Pull a book out slightly (index hover) or reset with null. */
-  highlightBook: (index: number | null) => void;
+  /** Pull one book out slightly (index hover), several (a technology), or reset with null. */
+  highlightBook: (index: number | number[] | null) => void;
   /** Move the camera to a book, or back to the scroll pose with null. */
   focusBook: (index: number | null) => void;
   /** Low resolution render that reads as a blur behind an open sheet; rendering stops meanwhile. */
@@ -43,6 +43,8 @@ type Pose = { p: [number, number, number]; t: [number, number, number] };
 const POSES: Record<SectionId, Pose> = {
   ciao: { p: [1.55, 1.75, 3.35], t: [0.4, 0.88, -0.3] },
   lavori: { p: [0.62, 1.12, 2.15], t: [1.3, 0.98, -0.45] },
+  // the technologies stay on the shelf, so their books can slide out
+  stack: { p: [0.62, 1.12, 2.15], t: [1.3, 0.98, -0.45] },
   metodo: { p: [0.1, 1.45, 0.72], t: [-0.3, 0.98, -0.4] },
   chi: { p: [0.55, 1.05, 0.55], t: [0.2, 0.86, -0.3] },
   contatti: { p: [-0.25, 1.9, 2.2], t: [-0.4, 0.9, -0.2] },
@@ -285,11 +287,11 @@ export function createRoom(opts: RoomOptions): Room {
       }) ?? null
     );
   }
-  let highlighted: number | null = null;
+  let highlighted: number[] = [];
   let focused: number | null = null;
   const syncBooks = () =>
     bookState.forEach((s, i) => {
-      if (s) s.want = (override ? focused === i : (hovered?.book ?? highlighted) === i) ? 1 : 0;
+      if (s) s.want = (override ? focused === i : hovered?.book !== undefined ? hovered.book === i : highlighted.includes(i)) ? 1 : 0;
     });
 
   const onMove = (e: PointerEvent) => {
@@ -406,7 +408,7 @@ export function createRoom(opts: RoomOptions): Room {
       invalidate();
     },
     highlightBook(i) {
-      highlighted = i;
+      highlighted = i === null ? [] : typeof i === "number" ? [i] : i;
       syncBooks();
       invalidate();
     },

@@ -1,8 +1,9 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { SITE, type Copy } from "@/lib/content/copy";
+import { TECH, TECH_AREAS, TECH_COLOR, TECH_IDS, type TechId } from "@/lib/content/tech";
 import type { Project, Status } from "@/lib/content/types";
 import { Doodle, Logo, Marked, Note, Sticker, StickerDefs } from "./doodles";
 
@@ -12,6 +13,8 @@ type Props = {
   inert: boolean;
   onOpen: (index: number) => void;
   onHighlight: (index: number | null) => void;
+  /** Pull out the books of every project that uses a technology. */
+  onHighlightMany: (indices: number[] | null) => void;
 };
 
 // Paper sections leave the right 44% of a desktop screen to the room's window, and the top 30% of a phone.
@@ -21,7 +24,18 @@ const paperStep =
 const sectionTitle = "mb-5 text-[clamp(1.9rem,2.9vw,2.6rem)] font-extrabold leading-tight tracking-[-0.01em]";
 const prose = "max-w-[60ch] text-[17px] leading-[1.65] wide:text-lg";
 
-export function Sections({ copy, projects, inert, onOpen, onHighlight }: Props) {
+export function Sections({ copy, projects, inert, onOpen, onHighlight, onHighlightMany }: Props) {
+  // hovered wins over tapped, so a pinned technology does not get in the way of the mouse
+  const [hoverTech, setHoverTech] = useState<TechId | null>(null);
+  const [pinnedTech, setPinnedTech] = useState<TechId | null>(null);
+  const tech = hoverTech ?? pinnedTech;
+  const pickTech = (next: TechId | null, pinned: boolean) => {
+    if (pinned) setPinnedTech(next);
+    else setHoverTech(next);
+    const shown = next ?? (pinned ? hoverTech : pinnedTech);
+    onHighlightMany(shown ? projects.flatMap((p, i) => (p.stack.includes(shown) ? [i] : [])) : null);
+  };
+
   return (
     <main inert={inert} className="pointer-events-none relative z-[2] text-base leading-[1.55]">
       <StickerDefs />
@@ -65,7 +79,7 @@ export function Sections({ copy, projects, inert, onOpen, onHighlight }: Props) 
               <ul className="border-t-2 border-ink" onPointerLeave={() => onHighlight(null)}>
                 {projects.map((p, i) =>
                   p.owner !== owner ? null : (
-                    <li key={p.slug} className="border-b border-rule">
+                    <li key={p.slug} className={`border-b border-rule transition-opacity duration-200 ${tech && !p.stack.includes(tech) ? "opacity-35" : ""}`}>
                       <button
                         type="button"
                         onClick={() => onOpen(i)}
@@ -81,6 +95,14 @@ export function Sections({ copy, projects, inert, onOpen, onHighlight }: Props) 
                           <span className="mt-0.5 block text-sm text-ink-soft">
                             <StatusLabel copy={copy} status={p.status} />, {p.client}, {p.year}
                           </span>
+                          <span className="mt-0.5 block text-sm text-ink-soft">
+                            {stackLine(p, tech).map((id, k) => (
+                              <span key={id}>
+                                {k > 0 && ", "}
+                                {id === tech ? <mark>{TECH[id].name}</mark> : TECH[id].name}
+                              </span>
+                            ))}
+                          </span>
                         </span>
                         <Thumb project={p} tilt={i % 2 ? 2.5 : -2} soon={copy.soon} />
                       </button>
@@ -92,6 +114,11 @@ export function Sections({ copy, projects, inert, onOpen, onHighlight }: Props) 
           ))}
           <p className="mt-6 text-sm text-ink-soft">{copy.statusNote}</p>
         </div>
+      </section>
+
+      {/* ---------- the tools behind the projects, each one lights up its books ---------- */}
+      <section id="stack" className={paperStep}>
+        <TechList copy={copy} projects={projects} active={tech} onPick={pickTech} />
       </section>
 
       {/* ---------- process: five steps, each with a doodle ---------- */}
@@ -181,6 +208,76 @@ export function Sections({ copy, projects, inert, onOpen, onHighlight }: Props) 
         </div>
       </section>
     </main>
+  );
+}
+
+// the first four tools of a project, keeping the active one in view when it sits further down
+function stackLine(p: Project, tech: TechId | null) {
+  const head = p.stack.slice(0, 4);
+  return tech && p.stack.includes(tech) && !head.includes(tech) ? [...head.slice(0, 3), tech] : head;
+}
+
+// The tools grouped by area. Each one that a project uses is a button: hover or tap it and the
+// projects using it stay lit in the list above and slide out of the shelf.
+function TechList({ copy, projects, active, onPick }: { copy: Copy; projects: Project[]; active: TechId | null; onPick: (id: TechId | null, pinned: boolean) => void }) {
+  const count = (id: TechId) => projects.filter((p) => p.stack.includes(id)).length;
+  const label = (n: number) => (n === 1 ? copy.tech.count.one : copy.tech.count.many.replace("{n}", String(n)));
+  return (
+    <div className="pointer-events-auto">
+      <h2 className={sectionTitle}>{copy.tech.title}</h2>
+      <p className={`${prose} text-ink-soft`}>{copy.tech.lead}</p>
+      <p className="mt-4 ml-12">
+        <Note arrow="next">
+          <span className="wide:hidden">{copy.tech.hint.touch}</span>
+          <span className="hidden wide:inline">{copy.tech.hint.wide}</span>
+        </Note>
+      </p>
+      <dl className="mt-3 max-w-[60ch]">
+        {TECH_AREAS.map((area) => (
+          <div key={area} className="border-b border-rule py-3.5">
+            <dt className="text-sm font-semibold text-ink-soft">{copy.tech.areas[area]}</dt>
+            {/* the names are written in the logo's hand, each in its own brand colour */}
+            <dd className="font-hand mt-1 text-[18px] leading-[1.8] font-bold wide:text-[19px]">
+              {TECH_IDS.filter((id) => TECH[id].area === area).map((id, k, list) => {
+                const n = count(id);
+                // each name keeps its number and comma, lines break on the space between names
+                return (
+                  <Fragment key={id}>
+                  {k > 0 && " "}
+                  <span className="whitespace-nowrap">
+                    {n === 0 ? (
+                      <span style={{ color: TECH_COLOR[id] }}>{TECH[id].name}</span>
+                    ) : (
+                      <button
+                        type="button"
+                        aria-pressed={active === id}
+                        aria-label={`${TECH[id].name}, ${label(n)}`}
+                        onPointerEnter={(e) => e.pointerType !== "touch" && onPick(id, false)}
+                        onPointerLeave={(e) => e.pointerType !== "touch" && onPick(null, false)}
+                        onFocus={() => onPick(id, false)}
+                        onBlur={() => onPick(null, false)}
+                        onClick={() => onPick(active === id ? null : id, true)}
+                        style={{ color: TECH_COLOR[id] }}
+                        className="group cursor-pointer"
+                      >
+                        <span className="underline decoration-current/35 decoration-dotted decoration-2 underline-offset-[0.24em] group-hover:decoration-current group-aria-pressed:decoration-solid group-aria-pressed:decoration-current">
+                          {active === id ? <mark>{TECH[id].name}</mark> : TECH[id].name}
+                        </span>
+                        <sup aria-hidden="true" className="ml-0.5 text-[0.68em] font-medium text-ink-soft">
+                          {n}
+                        </sup>
+                      </button>
+                    )}
+                    {k < list.length - 1 && ","}
+                  </span>
+                  </Fragment>
+                );
+              })}
+            </dd>
+          </div>
+        ))}
+      </dl>
+    </div>
   );
 }
 

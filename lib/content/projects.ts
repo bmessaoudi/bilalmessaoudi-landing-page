@@ -1,6 +1,7 @@
+import type { TechId } from "./tech";
 import type { GroupId, Locale, Owner, Project, Shot, Status } from "./types";
 
-type Localized = Record<Locale, Omit<Project, "slug" | "group" | "spine" | "color" | "shots" | "client" | "year" | "owner" | "status"> & { shots: string[] }>;
+type Localized = Record<Locale, Omit<Project, "slug" | "group" | "spine" | "color" | "shots" | "client" | "year" | "owner" | "status" | "stack"> & { shots: string[] }>;
 
 type Entry = {
   slug: string;
@@ -433,19 +434,20 @@ const ENTRIES: Entry[] = [
 ];
 
 // owner, status, year and a generic client name for the index; clients are never named
-const META: Record<string, { year: number; owner: Owner; status: Status; client: Record<Locale, string> }> = {
-  "ricorsi-da-pdf": { year: 2026, owner: "client", status: "development", client: { it: "Studio legale", en: "Law firm" } },
-  "copilota-bandi": { year: 2026, owner: "mine", status: "demo", client: { it: "Progetto mio", en: "Personal" } },
-  "knowledge-mcp": { year: 2026, owner: "mine", status: "production", client: { it: "Progetto mio", en: "Personal" } },
-  "tg-sniffer": { year: 2026, owner: "client", status: "production", client: { it: "Community di trading", en: "Trading communities" } },
-  "lead-finder": { year: 2026, owner: "mine", status: "development", client: { it: "Progetto mio", en: "Personal" } },
-  "gestionale-eventi": { year: 2026, owner: "client", status: "production", client: { it: "Organizzatore di eventi", en: "Events company" } },
-  "borsa-calciatori": { year: 2026, owner: "client", status: "delivered", client: { it: "Startup nel calcio", en: "Football startup" } },
-  "academy-online": { year: 2025, owner: "client", status: "delivered", client: { it: "Formazione online", en: "Online training" } },
-  "noleggio-di-lusso": { year: 2026, owner: "client", status: "production", client: { it: "Autonoleggio", en: "Car rental" } },
-  "yacht-guida-vocale": { year: 2026, owner: "client", status: "demo", client: { it: "Cantiere navale", en: "Shipyard" } },
-  vabbe: { year: 2026, owner: "mine", status: "development", client: { it: "Progetto mio", en: "Personal" } },
-  tamamoshi: { year: 2026, owner: "mine", status: "development", client: { it: "Progetto mio", en: "Personal" } },
+// stack: the tools from lib/content/tech.ts, most telling first (the index shows the first four)
+const META: Record<string, { year: number; owner: Owner; status: Status; stack: TechId[]; client: Record<Locale, string> }> = {
+  "ricorsi-da-pdf": { year: 2026, owner: "client", status: "development", stack: ["nextjs", "fastapi", "mongodb", "claude", "tiptap", "python", "react"], client: { it: "Studio legale", en: "Law firm" } },
+  "copilota-bandi": { year: 2026, owner: "mine", status: "demo", stack: ["claude", "mcp", "postgres", "firecrawl", "typescript"], client: { it: "Progetto mio", en: "Personal" } },
+  "knowledge-mcp": { year: 2026, owner: "mine", status: "production", stack: ["mcp", "cloudflare", "typescript"], client: { it: "Progetto mio", en: "Personal" } },
+  "tg-sniffer": { year: 2026, owner: "client", status: "production", stack: ["python", "telethon", "fastapi", "react", "docker"], client: { it: "Community di trading", en: "Trading communities" } },
+  "lead-finder": { year: 2026, owner: "mine", status: "development", stack: ["nextjs", "fastapi", "playwright", "firecrawl", "mongodb", "python", "react"], client: { it: "Progetto mio", en: "Personal" } },
+  "gestionale-eventi": { year: 2026, owner: "client", status: "production", stack: ["nextjs", "express", "mongodb", "stripe", "node", "react"], client: { it: "Organizzatore di eventi", en: "Events company" } },
+  "borsa-calciatori": { year: 2026, owner: "client", status: "delivered", stack: ["nextjs", "sanity", "react"], client: { it: "Startup nel calcio", en: "Football startup" } },
+  "academy-online": { year: 2025, owner: "client", status: "delivered", stack: ["nextjs", "express", "mongodb", "stripe", "node", "react"], client: { it: "Formazione online", en: "Online training" } },
+  "noleggio-di-lusso": { year: 2026, owner: "client", status: "production", stack: ["nextjs", "gsap", "sanity", "resend", "react"], client: { it: "Autonoleggio", en: "Car rental" } },
+  "yacht-guida-vocale": { year: 2026, owner: "client", status: "demo", stack: ["threejs", "livekit", "claude", "deepgram", "elevenlabs"], client: { it: "Cantiere navale", en: "Shipyard" } },
+  vabbe: { year: 2026, owner: "mine", status: "development", stack: ["nextjs", "hono", "cloudflare", "stripe", "react"], client: { it: "Progetto mio", en: "Personal" } },
+  tamamoshi: { year: 2026, owner: "mine", status: "development", stack: ["expo", "llama", "sqlite", "react"], client: { it: "Progetto mio", en: "Personal" } },
 };
 
 export const GROUP_ORDER: GroupId[] = ["ai", "business", "experiences", "mine"];
@@ -465,6 +467,7 @@ export function getProjects(locale: Locale): Project[] {
       year: META[e.slug].year,
       owner: META[e.slug].owner,
       status: META[e.slug].status,
+      stack: META[e.slug].stack,
       body: t.body,
       facts: t.facts,
       shots: e.shots.map((s, i) => ({ ...s, caption: t.shots[i] ?? "" })),
