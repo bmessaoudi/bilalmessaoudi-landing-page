@@ -17,9 +17,12 @@ export function buildMetadata(locale: Locale): Metadata {
     metadataBase: new URL(SITE.url),
     title: copy.meta.title,
     description: copy.meta.description,
+    applicationName: "devbybil",
+    authors: [{ name: "Bilal Messaoudi", url: SITE.url }],
+    creator: "Bilal Messaoudi",
     alternates: {
       canonical: locale === "it" ? "/" : "/en",
-      languages: { it: "/", en: "/en" },
+      languages: { it: "/", en: "/en", "x-default": "/" },
     },
     openGraph: {
       title: copy.meta.title,

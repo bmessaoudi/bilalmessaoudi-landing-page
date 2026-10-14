@@ -5,8 +5,11 @@ type Step = { icon: IconName; title: string; text: string; note?: string };
 type Para = { text: string; note?: string; sticker?: StickerName };
 type StickerItem = { name: StickerName; label: string };
 
+// Vercel sets the production domain at build time, so a custom domain added later is picked up on its own
+const productionHost = process.env.NEXT_PUBLIC_SITE_URL ?? process.env.VERCEL_PROJECT_PRODUCTION_URL;
+
 export const SITE = {
-  url: "https://bilalmessaoudi.com",
+  url: productionHost ? `https://${productionHost.replace(/^https?:\/\//, "")}` : "https://bilalmessaoudi-landing-page.vercel.app",
   email: "bilelmessaudi@gmail.com",
   github: "https://github.com/bmessaoudi",
   linkedin: "https://www.linkedin.com/in/bilal-messaoudi-877a6a183",
