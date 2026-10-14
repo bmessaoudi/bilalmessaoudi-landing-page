@@ -29,15 +29,15 @@ export function Sections({ copy, projects, inert, onOpen, onHighlight }: Props) 
       {/* ---------- arrival: the room fills the screen, a few lines sit in its corner ---------- */}
       <section id="ciao" className="flex min-h-svh flex-col justify-end px-[var(--pad)] pt-24 pb-[calc(32px+env(safe-area-inset-bottom,0px))] text-light wide:pb-14">
         <div className="pointer-events-auto max-w-[34rem]">
-          <p className="mb-9 ml-12 max-w-[24rem]">
-            <Note className="!text-lamp">
-              <span className="wide:hidden">{copy.ciao.hint.touch}</span>
-              <span className="hidden wide:inline">{copy.ciao.hint.wide}</span>
-            </Note>
-          </p>
           <h1 className="text-[clamp(1.9rem,3.4vw,2.9rem)] font-extrabold leading-tight tracking-[-0.01em]">{copy.ciao.name}</h1>
           <p className="mt-3 text-lg text-light/90">
             {copy.ciao.role} {copy.ciao.lead}
+          </p>
+          <p className="mt-6 ml-12 max-w-[24rem]">
+            <Note arrow="scroll" className="!text-lamp">
+              <span className="wide:hidden">{copy.ciao.hint.touch}</span>
+              <span className="hidden wide:inline">{copy.ciao.hint.wide}</span>
+            </Note>
           </p>
         </div>
       </section>
