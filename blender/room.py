@@ -323,10 +323,6 @@ M = {
     "terracotta": textured("terracotta", "#B4673F", rough=0.85, scale=120, amount=0.12, bump=0.15),
     "soil": textured("soil", "#2B2018", rough=1.0, scale=200, amount=0.3, bump=0.4),
     "fabric": textured("fabric", "#5A6170", rough=0.95, scale=900, amount=0.14, bump=0.3),
-    "cork": textured("cork", "#A57A4F", rough=1.0, scale=260, amount=0.35, bump=0.5),
-    "paper": textured("paper", "#EFEBE2", rough=0.9, scale=500, amount=0.03, bump=0.05),
-    "sticky": textured("sticky", "#E8D36A", rough=0.85, scale=500, amount=0.04, bump=0.05),
-    "pin": plain("pin", "#B8432F", rough=0.3, coat=0.5),
     "rubber": plain("rubber", "#1A1A1C", rough=0.8),
     "lampshade": plain("lampshade", "#2E3B35", rough=0.4, metal=0.6),
     "lamp_inner": plain("lamp_inner", "#E8E2D4", rough=0.5),
@@ -993,27 +989,9 @@ set_origin(chair, (0, 0, 0))
 chair.location = V(chx, 0, chz)
 chair.rotation_euler = rot_three((0, 0.55, 0))
 
-# ---------------------------------------------------------------- pinboard
-
-bx, by, bw_, bh_ = dx + 0.42, 1.52, 0.62, 0.42
-board = [
-    box("cork", (bw_, bh_, 0.012), (bx, by, WALL_Z + 0.008), M["cork"], "furniture", bev=0.001),
-]
-for i, (fy, fw, fh) in enumerate([(by + bh_ / 2, bw_ + 0.03, 0.02), (by - bh_ / 2, bw_ + 0.03, 0.02)]):
-    board.append(box(f"bf{i}", (fw, fh, 0.02), (bx, fy, WALL_Z + 0.01), M["shelf"], "furniture", bev=0.003))
-for i, fx_ in enumerate((bx - bw_ / 2, bx + bw_ / 2)):
-    board.append(box(f"bs{i}", (0.02, bh_ + 0.03, 0.02), (fx_, by, WALL_Z + 0.01), M["shelf"], "furniture", bev=0.003))
-r3 = random.Random(3)
-notes = [(-0.2, 0.08, 0.1, 0.075, "paper"), (-0.06, 0.1, 0.085, 0.085, "sticky"), (0.1, 0.06, 0.12, 0.085, "paper"), (-0.17, -0.09, 0.075, 0.075, "sticky"), (0.03, -0.08, 0.1, 0.13, "paper"), (0.2, -0.07, 0.075, 0.075, "sticky")]
-for i, (ox, oy, nw, nh, m) in enumerate(notes):
-    n_ = box(f"note{i}", (nw, nh, 0.0008), (bx + ox, by + oy, WALL_Z + 0.0152), M[m], "furniture", bev=0.0, rot=(0, 0, r3.uniform(-0.12, 0.12)))
-    pin = sphere(f"pin{i}", 0.006, (bx + ox, by + oy + nh / 2 - 0.012, WALL_Z + 0.019), M["pin"], "furniture", seg=12)
-    board += [n_, pin]
-join("pinboard", board)
-
 # ---------------------------------------------------------------- tech posters
 
-# Three framed prints left of the pinboard, drawn by blender/export-tech.mts from the site's
+# Three framed prints left of the world map, drawn by blender/export-tech.mts from the site's
 # technology list. They bake into their own small atlas so the logos stay sharp.
 POSTERS = [
     # image, centre x, centre y, width, height (the image keeps the same aspect)
@@ -1234,6 +1212,224 @@ def fill_shelves():
 
 fill_shelves()
 
+# ---------------------------------------------------------------- the things that make it my room
+
+# Basketball, a shield, a world map and a game controller: the hobbies from the "Chi sono" stickers.
+# They share the "decor" atlas.
+
+
+def math_node(n, op, a, b=None):
+    m = n.node("ShaderNodeMath", operation=op)
+    for sock, v in zip(m.inputs, (a, b)):
+        if v is None:
+            continue
+        if isinstance(v, (int, float)):
+            sock.default_value = v
+        else:
+            n.link(v, sock)
+    return m.outputs[0]
+
+
+def band(n, v, at, w):
+    """1 where |v - at| < w, for a painted line."""
+    return math_node(n, "LESS_THAN", math_node(n, "ABSOLUTE", math_node(n, "SUBTRACT", v, at)), w)
+
+
+BALL_R = 0.12
+
+
+def basketball_mat():
+    n = N("basketball")
+    tc = n.node("ShaderNodeTexCoord")
+    sep = n.node("ShaderNodeSeparateXYZ")
+    n.link(tc.outputs["Object"], sep.inputs[0])
+    x, y = sep.outputs["X"], sep.outputs["Y"]
+    w = 0.0032
+    # two great circles crossing at the poles, plus the two curved seams on the sides, which bow
+    # towards the middle as they near the poles: |x| = R (0.74 - 0.38 (y / R)^2)
+    seams = math_node(n, "MAXIMUM", band(n, x, 0.0, w), band(n, y, 0.0, w))
+    y2 = math_node(n, "POWER", math_node(n, "DIVIDE", y, BALL_R), 2.0)
+    curve = math_node(n, "MULTIPLY", math_node(n, "SUBTRACT", 0.74, math_node(n, "MULTIPLY", y2, 0.38)), BALL_R)
+    seams = math_node(n, "MAXIMUM", seams, band(n, math_node(n, "ABSOLUTE", x), curve, w))
+    # pebbled leather
+    vor = n.node("ShaderNodeTexVoronoi")
+    n.link(tc.outputs["Object"], vor.inputs["Vector"])
+    vor.inputs["Scale"].default_value = 1400
+    nz = n.noise(tc.outputs["Object"], scale=40, detail=4)
+    _, f, a, b, leather = mix(n)
+    n.link(nz.outputs["Fac"], f)
+    a.default_value = (*hexc("#A9481F"), 1)
+    b.default_value = (*hexc("#CF6A35"), 1)
+    _, f2, a2, b2, col = mix(n)
+    n.link(seams, f2)
+    n.link(leather, a2)
+    b2.default_value = (*hexc("#16120F"), 1)
+    n.link(col, n.bsdf.inputs["Base Color"])
+    n.set("Roughness", 0.72)
+    # seams sit a little lower than the pebbles
+    h = math_node(n, "SUBTRACT", vor.outputs["Distance"], math_node(n, "MULTIPLY", seams, 1.5))
+    n.bump(h, strength=0.45, distance=0.0012)
+    return n.m
+
+
+SHIELD_R = 0.2
+
+
+def shield_mat():
+    n = N("shield")
+    tc = n.node("ShaderNodeTexCoord")
+    sep = n.node("ShaderNodeSeparateXYZ")
+    n.link(tc.outputs["Object"], sep.inputs[0])
+    cmb = n.node("ShaderNodeCombineXYZ")
+    n.link(sep.outputs["X"], cmb.inputs["X"])
+    n.link(sep.outputs["Y"], cmb.inputs["Y"])
+    ln = n.node("ShaderNodeVectorMath", operation="LENGTH")
+    n.link(cmb.outputs[0], ln.inputs[0])
+    k = math_node(n, "DIVIDE", ln.outputs["Value"], SHIELD_R)
+    col = n.ramp(k, [(0.0, "#1C3670"), (0.385, "#A01F27"), (0.605, "#E3DDD0"), (0.805, "#A01F27")])
+    col.node.color_ramp.interpolation = "CONSTANT"
+    # a little wear on the paint
+    nz = n.noise(tc.outputs["Object"], scale=90, detail=8)
+    _, f, a, b, out = mix(n, "MULTIPLY")
+    f.default_value = 0.12
+    n.link(col, a)
+    n.link(nz.outputs["Color"], b)
+    n.link(out, n.bsdf.inputs["Base Color"])
+    n.set("Roughness", 0.36)
+    n.set("Metallic", 0.35)
+    n.set("Coat Weight", 0.3)
+    return n.m
+
+
+def dome(r):
+    return 0.03 * (1 - (r / SHIELD_R) ** 2)
+
+
+# a shallow dome with a groove between the rings
+profile = [(0.0, dome(0.0))]
+for edge in (0.077, 0.121, 0.161):
+    for r_, dip in ((edge - 0.004, 0.0), (edge, -0.0018), (edge + 0.004, 0.0)):
+        profile.append((r_, dome(r_) + dip))
+profile += [(SHIELD_R - 0.003, dome(SHIELD_R - 0.003)), (SHIELD_R, -0.002), (SHIELD_R - 0.004, -0.007), (0.0, -0.007)]
+shield = lathe("shield", profile, (0, 0, 0), shield_mat(), "decor", steps=96)
+# the star in the middle, cut from the same steel
+bm = bmesh.new()
+pts = []
+for i in range(10):
+    a = math.pi / 2 + i * math.pi / 5
+    r_ = 0.072 if i % 2 == 0 else 0.028
+    pts.append(bm.verts.new((r_ * math.cos(a), r_ * math.sin(a), dome(0.0) - 0.0005)))
+face = bm.faces.new(pts)
+ext = bmesh.ops.extrude_face_region(bm, geom=[face])
+bmesh.ops.translate(bm, vec=(0, 0, 0.003), verts=[v for v in ext["geom"] if isinstance(v, bmesh.types.BMVert)])
+bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+star = obj_from_bm("shield_star", bm, [plain("shield_star", "#E3DDD0", rough=0.36, metal=0.35, coat=0.3)], "decor")
+shield = join("shield", [shield, star])
+# on the floor under the window, leaning back against the wall
+lean = 0.25
+shield.rotation_euler = (0, math.pi / 2 - lean, 0)
+shield.location = V(W0 + SHIELD_R * math.sin(lean) + 0.018, SHIELD_R * math.cos(lean) + 0.01, WIN["z"] + 0.05)
+
+# basketball on the floor between the desk and the bookshelf
+ball = sphere("basketball", BALL_R, (0.7, BALL_R, -0.08), basketball_mat(), "decor", seg=64)
+ball.rotation_euler = (0.35, 0.15, 0.5)
+ball["uv_scale"] = 1.4
+
+# world map on the back wall over the desk, where a pinboard used to be
+MAP_W, MAP_H = 0.75, 0.42
+mx, my = DESK["x"] + 0.42, 1.52
+map_parts = [
+    box("map_t", (MAP_W + 2 * FR, FR, 0.02), (mx, my + MAP_H / 2 + FR / 2, WALL_Z + 0.01), M["shelf"], "decor", bev=0.002),
+    box("map_b", (MAP_W + 2 * FR, FR, 0.02), (mx, my - MAP_H / 2 - FR / 2, WALL_Z + 0.01), M["shelf"], "decor", bev=0.002),
+    box("map_l", (FR, MAP_H, 0.02), (mx - MAP_W / 2 - FR / 2, my, WALL_Z + 0.01), M["shelf"], "decor", bev=0.002),
+    box("map_r", (FR, MAP_H, 0.02), (mx + MAP_W / 2 + FR / 2, my, WALL_Z + 0.01), M["shelf"], "decor", bev=0.002),
+]
+join("map_frame", map_parts)
+world_map = plane("world_map", MAP_W, MAP_H, (mx, my, WALL_Z + 0.014), poster_mat("world_map"), "decor", "+z")
+world_map.data.uv_layers[0].name = "label"
+world_map["uv_scale"] = 2.2
+
+# game controller lying on the free end of the third shelf
+gx, gy, gz = sx_ - 0.27, SHELF["rows"][1], shelf_z + 0.04
+pad = textured("pad", "#2A2D34", rough=0.5, scale=600, amount=0.05, bump=0.04)
+pad_dark = plain("pad_dark", "#15171B", rough=0.45)
+parts = [box("pad_body", (0.098, 0.026, 0.052), (gx, gy + 0.016, gz - 0.004), pad, "decor", bev=0.012, seg=4)]
+for side in (-1, 1):
+    g = sphere(f"pad_grip{side}", 1.0, (gx + side * 0.047, gy + 0.016, gz + 0.016), pad, "decor", scale=(0.024, 0.0135, 0.04), seg=32)
+    g.rotation_euler = rot_three((0, side * 0.38, 0))
+    parts.append(g)
+    parts.append(cylinder(f"pad_stick{side}", 0.0085, 0.01, (gx + side * 0.019, gy + 0.031, gz + 0.012), pad_dark, "decor", verts=24, bev=0.001))
+    parts.append(cylinder(f"pad_cap{side}", 0.0105, 0.004, (gx + side * 0.019, gy + 0.037, gz + 0.012), pad_dark, "decor", verts=24, bev=0.0015))
+parts += [
+    box("pad_dpad_a", (0.022, 0.004, 0.0072), (gx - 0.037, gy + 0.03, gz - 0.008), pad_dark, "decor", bev=0.001),
+    box("pad_dpad_b", (0.0072, 0.004, 0.022), (gx - 0.037, gy + 0.03, gz - 0.008), pad_dark, "decor", bev=0.001),
+]
+for i, (ox, oz, c) in enumerate([(0, 0.0085, "#3E8A4A"), (0.0085, 0, "#B23A33"), (-0.0085, 0, "#3A5FA8"), (0, -0.0085, "#C9A23A")]):
+    parts.append(sphere(f"pad_btn{i}", 0.0042, (gx + 0.037 + ox, gy + 0.029, gz - 0.008 + oz), plain(f"pad_btn{i}", c, rough=0.3, coat=0.4), "decor", seg=16))
+controller = join("controller", parts)
+controller["uv_density"] = 1.6
+set_origin(controller, (gx, gy, gz))
+controller.rotation_euler = rot_three((0, 0.45, 0))
+controller.scale = (1.25, 1.25, 1.25)
+
+# Iron Man: a Mark I arc reactor on a little display stand, on the free right end of the
+# second shelf from the top.
+# Built facing Blender +Z around the origin, then stood up towards the room.
+
+
+def local_box(name, size, at, angle, mat, bev=0.0008):
+    bm = bmesh.new()
+    bmesh.ops.create_cube(bm, size=1.0)
+    bmesh.ops.scale(bm, vec=size, verts=bm.verts)
+    bmesh.ops.rotate(bm, cent=(0, 0, 0), matrix=Matrix.Rotation(angle, 3, "Z"), verts=bm.verts)
+    bmesh.ops.translate(bm, vec=at, verts=bm.verts)
+    return bevel(obj_from_bm(name, bm, [mat], "decor"), bev, 2)
+
+
+ARC_R = 0.066
+copper = plain("copper", "#B4693A", rough=0.28, metal=1.0)
+arc_glow = emission("arc_glow", "#8FDFFF", 10.0)
+arc_core = emission("arc_core", "#E6FAFF", 22.0)
+arc = [
+    # steel casing: a shallow can with a raised lip
+    lathe("arc_case", [(0.0, -0.012), (ARC_R, -0.012), (ARC_R + 0.002, -0.008), (ARC_R + 0.002, 0.008), (ARC_R - 0.004, 0.011), (ARC_R - 0.007, 0.006), (0.0, 0.004)], (0, 0, 0), M["alu_dark"], "decor", steps=64),
+    # the glowing ring the coils sit on
+    lathe("arc_ring", [(0.019, 0.006), (0.027, 0.006), (0.027, 0.009), (0.019, 0.009)], (0, 0, 0), arc_glow, "decor", steps=64),
+    # the core under a steel collar
+    lathe("arc_collar", [(0.0115, 0.006), (0.019, 0.006), (0.0175, 0.0145), (0.0115, 0.0145)], (0, 0, 0), M["alu"], "decor", steps=48),
+    lathe("arc_core", [(0.0, 0.0135), (0.0115, 0.0135), (0.0, 0.0155)], (0, 0, 0), arc_core, "decor", steps=48),
+]
+# ten copper coils wound around the ring
+for i in range(10):
+    a = i * math.tau / 10
+    c = Vector((math.cos(a), math.sin(a), 0)) * 0.043
+    # each coil is a stack of rounded windings, so the wire reads in the light
+    for k in range(7):
+        r_ = 0.0315 + k * 0.0037
+        w_ = Vector((math.cos(a), math.sin(a), 0)) * r_
+        arc.append(local_box(f"arc_coil{i}_{k}", (0.0034, 0.0135, 0.0125), (w_.x, w_.y, 0.0112), a, copper, bev=0.0014))
+    # the wire between the coils, steel spokes
+    s_ = Vector((math.cos(a + math.pi / 10), math.sin(a + math.pi / 10), 0)) * 0.043
+    arc.append(local_box(f"arc_spoke{i}", (0.02, 0.003, 0.004), (s_.x, s_.y, 0.008), a + math.pi / 10, M["alu"]))
+reactor = join("arc_reactor", arc)
+ax_, az_ = sx_ + 0.3, shelf_z + 0.04
+top_y = SHELF["rows"][2] + 0.012
+reactor.location = V(ax_, top_y + ARC_R + 0.012, az_)
+# stood up and leaning back a little, turned towards the room
+reactor.rotation_euler = (math.pi / 2 - 0.22, 0, -0.35)
+reactor["uv_density"] = 2.0
+# a black acrylic stand: base and a lip that holds the bottom of the reactor
+stand = join(
+    "arc_stand",
+    [
+        box("arc_stand_base", (0.12, 0.012, 0.08), (ax_, top_y - 0.006, az_), M["plastic_black"], "decor", bev=0.003),
+        box("arc_stand_lip", (0.08, 0.016, 0.012), (ax_, top_y + 0.008, az_ + 0.028), M["plastic_black"], "decor", bev=0.003),
+    ],
+)
+stand.rotation_euler = rot_three((0, 0.35, 0))
+set_origin(stand, (ax_, top_y, az_))
+stand.rotation_euler = rot_three((0, 0.35, 0))
+
 # ---------------------------------------------------------------- Clawd
 
 # Built around its own origin (bottom centre), then placed on the desk.
@@ -1318,6 +1514,7 @@ POSES = {
     "ciao": ((1.55, 1.75, 3.35), (0.4, 0.88, -0.3), 38),
     "lavori": ((0.62, 1.12, 2.15), (1.3, 0.98, -0.45), 46),
     "posters": ((-0.3, 1.6, 1.4), (-0.85, 1.6, -0.62), 46),
+    "decor": ((0.3, 1.25, 1.6), (1.7, 1.0, -0.1), 50),
     "metodo": ((-0.12, 1.32, 0.62), (-0.22, 1.0, -0.42), 46),
     "chi": ((0.55, 1.05, 0.55), (0.2, 0.86, -0.3), 46),
     "contatti": ((-0.25, 1.9, 2.2), (-0.4, 0.9, -0.2), 38),

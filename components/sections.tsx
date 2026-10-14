@@ -118,7 +118,7 @@ export function Sections({ copy, projects, inert, onOpen, onHighlight, onHighlig
 
       {/* ---------- the tools behind the projects, each one lights up its books ---------- */}
       <section id="stack" className={paperStep}>
-        <TechList copy={copy} projects={projects} active={tech} onPick={pickTech} />
+        <TechList copy={copy} projects={projects} active={tech} pinned={pinnedTech} onPick={pickTech} onOpen={onOpen} />
       </section>
 
       {/* ---------- process: five steps, each with a doodle ---------- */}
@@ -219,7 +219,21 @@ function stackLine(p: Project, tech: TechId | null) {
 
 // The tools grouped by area. Each one that a project uses is a button: hover or tap it and the
 // projects using it stay lit in the list above and slide out of the shelf.
-function TechList({ copy, projects, active, onPick }: { copy: Copy; projects: Project[]; active: TechId | null; onPick: (id: TechId | null, pinned: boolean) => void }) {
+function TechList({
+  copy,
+  projects,
+  active,
+  pinned,
+  onPick,
+  onOpen,
+}: {
+  copy: Copy;
+  projects: Project[];
+  active: TechId | null;
+  pinned: TechId | null;
+  onPick: (id: TechId | null, pinned: boolean) => void;
+  onOpen: (index: number) => void;
+}) {
   const count = (id: TechId) => projects.filter((p) => p.stack.includes(id)).length;
   const label = (n: number) => (n === 1 ? copy.tech.count.one : copy.tech.count.many.replace("{n}", String(n)));
   return (
@@ -274,6 +288,20 @@ function TechList({ copy, projects, active, onPick }: { copy: Copy; projects: Pr
                 );
               })}
             </dd>
+            {/* a clicked technology lists its projects, each one opens its sheet */}
+            {pinned && TECH[pinned].area === area && (
+              <p className="mt-2 text-[15px] leading-relaxed text-ink-soft">
+                {copy.tech.usedIn}{" "}
+                {projects.map((p, i) => ({ p, i })).filter(({ p }) => p.stack.includes(pinned)).map(({ p, i }, k, list) => (
+                  <Fragment key={p.slug}>
+                    <button type="button" onClick={() => onOpen(i)} className="inline cursor-pointer text-left font-medium text-ink underline underline-offset-[0.22em] hover:text-lamp-ink">
+                      {p.title}
+                    </button>
+                    {k < list.length - 1 && ", "}
+                  </Fragment>
+                ))}
+              </p>
+            )}
           </div>
         ))}
       </dl>

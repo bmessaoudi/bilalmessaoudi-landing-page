@@ -70,9 +70,10 @@ const it = {
     title: "Con cosa lavoro",
     lead: "Scelgo gli strumenti in base al progetto, ma questi sono quelli che tornano più spesso. Il numerino accanto dice in quanti dei progetti qui sopra compare.",
     hint: {
-      wide: "passaci sopra e si accendono i libri",
-      touch: "toccane uno e si accendono i libri",
+      wide: "passaci sopra per vedere i libri, cliccalo per i progetti",
+      touch: "toccane uno per vedere i libri e i progetti",
     },
+    usedIn: "Lo trovi in:",
     areas: {
       web: "Siti e interfacce",
       backend: "Backend e dati",
@@ -165,7 +166,7 @@ const it = {
     noShots: "Gli screenshot di questo progetto arrivano presto.",
     keys: "Frecce per sfogliare, Esc per chiudere",
   },
-  scene: { monitor: "Come lavoro", robot: "Clawd", moka: "Chi sono", phone: "Contatti" },
+  scene: { monitor: "Come lavoro", robot: "Clawd", moka: "Chi sono", phone: "Contatti", ball: "Basket", shield: "Marvel", map: "Viaggi", pad: "Videogiochi", posters: "Con cosa lavoro", ironman: "Iron Man" },
   log: [
     { kind: "$", text: "claude" },
     { kind: ">", text: "aggiungi l'export in Word ai ricorsi" },
@@ -221,9 +222,10 @@ const en: Copy = {
     title: "What I work with",
     lead: "I pick the tools for each project, but these are the ones that keep coming back. The small number next to each one says how many of the projects above use it.",
     hint: {
-      wide: "hover one and the books light up",
-      touch: "tap one and the books light up",
+      wide: "hover one to see the books, click it for the projects",
+      touch: "tap one to see the books and the projects",
     },
+    usedIn: "You'll find it in:",
     areas: {
       web: "Sites and interfaces",
       backend: "Backend and data",
@@ -315,7 +317,7 @@ const en: Copy = {
     noShots: "Screenshots for this project are coming soon.",
     keys: "Arrow keys to browse, Esc to close",
   },
-  scene: { monitor: "How I work", robot: "Clawd", moka: "About", phone: "Contact" },
+  scene: { monitor: "How I work", robot: "Clawd", moka: "About", phone: "Contact", ball: "Basketball", shield: "Marvel", map: "Travel", pad: "Video games", posters: "What I work with", ironman: "Iron Man" },
   log: it.log,
 };
 

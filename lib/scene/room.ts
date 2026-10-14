@@ -16,7 +16,7 @@ export type RoomPick = { type: "book"; index: number } | { type: "section"; id: 
 export type RoomOptions = {
   canvas: HTMLCanvasElement;
   log: LogLine[];
-  labels: { monitor: string; robot: string; moka: string; phone: string; books: string[] };
+  labels: { monitor: string; robot: string; moka: string; phone: string; ball: string; shield: string; map: string; pad: string; posters: string; ironman: string; books: string[] };
   fonts: { mono: string };
   reducedMotion: boolean;
   onHover: (hit: { label: string; x: number; y: number } | null) => void;
@@ -33,6 +33,8 @@ export type Room = {
   highlightBook: (index: number | number[] | null) => void;
   /** Move the camera to a book, or back to the scroll pose with null. */
   focusBook: (index: number | null) => void;
+  /** Turn the camera to the whole bookshelf (a technology is picked), or back to the scroll pose. */
+  lookAtShelf: (on: boolean) => void;
   /** Low resolution render that reads as a blur behind an open sheet; rendering stops meanwhile. */
   setBlur: (on: boolean) => void;
   resize: () => void;
@@ -43,8 +45,8 @@ type Pose = { p: [number, number, number]; t: [number, number, number] };
 const POSES: Record<SectionId, Pose> = {
   ciao: { p: [1.55, 1.75, 3.35], t: [0.4, 0.88, -0.3] },
   lavori: { p: [0.62, 1.12, 2.15], t: [1.3, 0.98, -0.45] },
-  // the technologies stay on the shelf, so their books can slide out
-  stack: { p: [0.62, 1.12, 2.15], t: [1.3, 0.98, -0.45] },
+  // the technology posters over the desk; picking a technology turns the camera to the shelf
+  stack: { p: [-0.5, 1.62, 1.55], t: [-0.84, 1.72, -0.62] },
   metodo: { p: [0.1, 1.45, 0.72], t: [-0.3, 0.98, -0.4] },
   chi: { p: [0.55, 1.05, 0.55], t: [0.2, 0.86, -0.3] },
   contatti: { p: [-0.25, 1.9, 2.2], t: [-0.4, 0.9, -0.2] },
@@ -208,6 +210,17 @@ export function createRoom(opts: RoomOptions): Room {
     add("clawd", { label: opts.labels.robot, go: "metodo", clawd: true });
     add("moka", { label: opts.labels.moka, go: "chi" });
     add("phone", { label: opts.labels.phone, go: "contatti" });
+    // the hobbies around the room lead to the about section
+    add("basketball", { label: opts.labels.ball, go: "chi" });
+    add("shield", { label: opts.labels.shield, go: "chi" });
+    add("world_map", { label: opts.labels.map, go: "chi" });
+    add("map_frame", { label: opts.labels.map, go: "chi" });
+    add("controller", { label: opts.labels.pad, go: "chi" });
+    add("arc_reactor", { label: opts.labels.ironman, go: "chi" });
+    for (const p of ["poster_main", "poster_b", "poster_c"]) {
+      add(p, { label: opts.labels.posters, go: "stack" });
+      add(`${p}_frame`, { label: opts.labels.posters, go: "stack" });
+    }
 
     built = true;
     last = performance.now();
@@ -223,6 +236,8 @@ export function createRoom(opts: RoomOptions): Room {
   const cur = { p: new THREE.Vector3(...POSES.ciao.p), t: new THREE.Vector3(...POSES.ciao.t) };
   const want = { p: cur.p.clone(), t: cur.t.clone() };
   let override: { p: THREE.Vector3; t: THREE.Vector3 } | null = null;
+  // a softer override under the book one: the whole shelf while a technology is picked
+  let shelf: { p: THREE.Vector3; t: THREE.Vector3 } | null = null;
   let active: SectionId = "ciao";
   let blurred = false;
 
@@ -291,7 +306,7 @@ export function createRoom(opts: RoomOptions): Room {
   let focused: number | null = null;
   const syncBooks = () =>
     bookState.forEach((s, i) => {
-      if (s) s.want = (override ? focused === i : hovered?.book !== undefined ? hovered.book === i : highlighted.includes(i)) ? 1 : 0;
+      if (s) s.want = (focused !== null ? focused === i : hovered?.book !== undefined ? hovered.book === i : highlighted.includes(i)) ? 1 : 0;
     });
 
   const onMove = (e: PointerEvent) => {
@@ -346,7 +361,7 @@ export function createRoom(opts: RoomOptions): Room {
       busy = true;
     }
 
-    const goal = override ?? want;
+    const goal = override ?? shelf ?? want;
     const k = reduce ? 1 : 1 - Math.exp(-dt * 5);
     cur.p.lerp(goal.p, k);
     cur.t.lerp(goal.t, k);
@@ -360,7 +375,7 @@ export function createRoom(opts: RoomOptions): Room {
       if (!b || !s) return;
       s.out += (s.want - s.out) * kb;
       if (Math.abs(s.want - s.out) > 0.002) busy = true;
-      b.position.z = s.z0 + s.out * 0.06;
+      b.position.z = s.z0 + s.out * 0.09;
     });
 
     // Clawd only moves while you are looking at the desk, or waving at you
@@ -416,6 +431,10 @@ export function createRoom(opts: RoomOptions): Room {
       focused = i;
       override = i !== null && books[i] ? bookPose(i) : null;
       syncBooks();
+      invalidate();
+    },
+    lookAtShelf(on) {
+      shelf = on ? poseOf("lavori") : null;
       invalidate();
     },
     setBlur(on) {

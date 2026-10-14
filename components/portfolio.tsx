@@ -53,6 +53,8 @@ export function Portfolio({ locale, copy, projects, fonts }: Props) {
   // `open` is the project in the sheet; `shown` flips once the camera has reached the book
   const [open, setOpen] = useState<number | null>(null);
   const [shown, setShown] = useState(false);
+  // the books of the technology picked in the stack section
+  const [techBooks, setTechBooks] = useState<number[] | null>(null);
   const openTimer = useRef(0);
   const pushedRef = useRef(false);
   const reduceRef = useRef(false);
@@ -239,6 +241,14 @@ export function Portfolio({ locale, copy, projects, fonts }: Props) {
 
   const sheetOpen = open !== null;
 
+  // in the stack section a picked technology turns the camera from the posters to the shelf
+  useEffect(() => {
+    const room = roomRef.current;
+    if (!room) return;
+    room.lookAtShelf(active === "stack" && techBooks !== null);
+    room.highlightBook(active === "stack" ? techBooks : null);
+  }, [active, techBooks, status]);
+
   return (
     <>
       <div ref={stageRef} className="fixed inset-0 z-0 bg-night">
@@ -292,12 +302,7 @@ export function Portfolio({ locale, copy, projects, fonts }: Props) {
           if (paper && innerWidth >= WIDE) room.focusBook(i);
           else room.highlightBook(i);
         }}
-        onHighlightMany={(list) => {
-          const room = roomRef.current;
-          if (!room || sheetOpen) return;
-          room.focusBook(null);
-          room.highlightBook(list);
-        }}
+        onHighlightMany={setTechBooks}
       />
 
       <div
