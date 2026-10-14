@@ -70,10 +70,12 @@ const it = {
     title: "Con cosa lavoro",
     lead: "Scelgo gli strumenti in base al progetto, ma questi sono quelli che tornano più spesso. Il numerino accanto dice in quanti dei progetti qui sopra compare.",
     hint: {
-      wide: "passaci sopra per vedere i libri, cliccalo per i progetti",
-      touch: "toccane uno per vedere i libri e i progetti",
+      wide: "passaci sopra e vado sul suo logo, cliccalo per i progetti",
+      touch: "toccane uno: vado sul suo logo e ti dico dove l'ho usato",
     },
     usedIn: "Lo trovi in:",
+    // tools no project in the list uses, and where they show up instead
+    elsewhere: { blender: "questa stanza, che ho modellato e illuminato io in Blender" },
     areas: {
       web: "Siti e interfacce",
       backend: "Backend e dati",
@@ -222,10 +224,11 @@ const en: Copy = {
     title: "What I work with",
     lead: "I pick the tools for each project, but these are the ones that keep coming back. The small number next to each one says how many of the projects above use it.",
     hint: {
-      wide: "hover one to see the books, click it for the projects",
-      touch: "tap one to see the books and the projects",
+      wide: "hover one and I zoom on its logo, click it for the projects",
+      touch: "tap one: I zoom on its logo and show where I used it",
     },
     usedIn: "You'll find it in:",
+    elsewhere: { blender: "this room, which I modelled and lit myself in Blender" },
     areas: {
       web: "Sites and interfaces",
       backend: "Backend and data",

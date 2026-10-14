@@ -992,13 +992,9 @@ chair.rotation_euler = rot_three((0, 0.55, 0))
 # ---------------------------------------------------------------- tech posters
 
 # Three framed prints left of the world map, drawn by blender/export-tech.mts from the site's
-# technology list. They bake into their own small atlas so the logos stay sharp.
-POSTERS = [
-    # image, centre x, centre y, width, height (the image keeps the same aspect)
-    ("poster_main", -0.62, 1.68, 0.46, 0.62),
-    ("poster_b", -1.15, 1.82, 0.30, 0.357),
-    ("poster_c", -1.15, 1.40, 0.30, 0.323),
-]
+# technology list. They bake into their own atlas so the logos stay sharp when the camera zooms in.
+# image, centre x, centre y, width, height, from lib/content/posters.ts
+POSTERS = [(p["file"], p["x"], p["y"], p["w"], p["h"]) for p in json.load(open(os.path.join(HERE, "posters", "layout.json")))]
 FR = 0.016  # frame moulding width
 
 
@@ -1021,7 +1017,8 @@ for name, px, py, pw, ph in POSTERS:
         box(f"{name}_l", (FR, ph, 0.02), (px - pw / 2 - FR / 2, py, WALL_Z + 0.01), M["plastic_black"], "posters", bev=0.002),
         box(f"{name}_r", (FR, ph, 0.02), (px + pw / 2 + FR / 2, py, WALL_Z + 0.01), M["plastic_black"], "posters", bev=0.002),
     ]
-    join(f"{name}_frame", parts)
+    # the moulding needs few texels, the print gets them
+    join(f"{name}_frame", parts)["uv_scale"] = 0.4
     art = plane(name, pw, ph, (px, py, WALL_Z + 0.014), poster_mat(name), "posters", "+z")
     art.data.uv_layers[0].name = "label"
     # the print gets more texels than the frame
@@ -1598,8 +1595,8 @@ def unwrap(objs):
     bpy.ops.object.mode_set(mode="OBJECT")
 
 
-# the posters fill a small atlas on their own; everything else uses the full size
-ATLAS_RES = {"posters": RES // 2}
+# every atlas gets the full size; the posters need it because the camera zooms on their logos
+ATLAS_RES = {}
 
 
 def bake(name, objs):

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Copy } from "@/lib/content/copy";
+import type { TechId } from "@/lib/content/tech";
 import type { Locale, Project, SectionId } from "@/lib/content/types";
 import type { Room } from "@/lib/scene/room";
 import { Logo } from "./doodles";
@@ -53,8 +54,9 @@ export function Portfolio({ locale, copy, projects, fonts }: Props) {
   // `open` is the project in the sheet; `shown` flips once the camera has reached the book
   const [open, setOpen] = useState<number | null>(null);
   const [shown, setShown] = useState(false);
-  // the books of the technology picked in the stack section
-  const [techBooks, setTechBooks] = useState<number[] | null>(null);
+  // the technology pinned in the stack section, and the one to circle on the posters
+  const [pinnedTech, setPinnedTech] = useState<TechId | null>(null);
+  const [shownTech, setShownTech] = useState<TechId | null>(null);
   const openTimer = useRef(0);
   const pushedRef = useRef(false);
   const reduceRef = useRef(false);
@@ -210,8 +212,13 @@ export function Portfolio({ locale, copy, projects, fonts }: Props) {
           reducedMotion: reduceRef.current,
           onHover: setTip,
           onPick: (pick) => {
+            const go = (id: SectionId) => document.getElementById(id)?.scrollIntoView({ behavior: reduceRef.current ? "auto" : "smooth" });
             if (pick.type === "book") showRef.current(pick.index, "push");
-            else document.getElementById(pick.id)?.scrollIntoView({ behavior: reduceRef.current ? "auto" : "smooth" });
+            else if (pick.type === "tech") {
+              // a logo on a poster: pick that technology in the list
+              setPinnedTech(pick.id);
+              go("stack");
+            } else go(pick.id);
           },
         });
         roomRef.current = room;
@@ -241,13 +248,12 @@ export function Portfolio({ locale, copy, projects, fonts }: Props) {
 
   const sheetOpen = open !== null;
 
-  // in the stack section a picked technology turns the camera from the posters to the shelf
+  // in the stack section the technology in the list is circled on the posters
   useEffect(() => {
     const room = roomRef.current;
     if (!room) return;
-    room.lookAtShelf(active === "stack" && techBooks !== null);
-    room.highlightBook(active === "stack" ? techBooks : null);
-  }, [active, techBooks, status]);
+    room.markTech(active === "stack" ? shownTech : null);
+  }, [active, shownTech, status]);
 
   return (
     <>
@@ -302,7 +308,9 @@ export function Portfolio({ locale, copy, projects, fonts }: Props) {
           if (paper && innerWidth >= WIDE) room.focusBook(i);
           else room.highlightBook(i);
         }}
-        onHighlightMany={setTechBooks}
+        pinnedTech={pinnedTech}
+        onPinTech={setPinnedTech}
+        onShowTech={setShownTech}
       />
 
       <div

@@ -348,7 +348,7 @@ const ENTRIES: Entry[] = [
           "Riconoscimento vocale, modello linguistico e sintesi vocale lavorano in tempo reale, e il modello linguistico può muovere la scena.",
         ],
         facts: [
-          { label: "Stack", value: "three.js, LiveKit Agents, Claude, Deepgram, ElevenLabs" },
+          { label: "Stack", value: "three.js, Blender, LiveKit Agents, Claude, Deepgram, ElevenLabs" },
         ],
         shots: ["La scena principale.", "Lo spaccato degli interni."],
       },
@@ -361,7 +361,7 @@ const ENTRIES: Entry[] = [
           "Speech recognition, language model and speech synthesis run in real time, and the language model is allowed to move the scene.",
         ],
         facts: [
-          { label: "Stack", value: "three.js, LiveKit Agents, Claude, Deepgram, ElevenLabs" },
+          { label: "Stack", value: "three.js, Blender, LiveKit Agents, Claude, Deepgram, ElevenLabs" },
         ],
         shots: ["The main scene.", "The interior cutaway."],
       },
@@ -445,7 +445,7 @@ const META: Record<string, { year: number; owner: Owner; status: Status; stack: 
   "borsa-calciatori": { year: 2026, owner: "client", status: "delivered", stack: ["nextjs", "sanity", "react"], client: { it: "Startup nel calcio", en: "Football startup" } },
   "academy-online": { year: 2025, owner: "client", status: "delivered", stack: ["nextjs", "express", "mongodb", "stripe", "node", "react"], client: { it: "Formazione online", en: "Online training" } },
   "noleggio-di-lusso": { year: 2026, owner: "client", status: "production", stack: ["nextjs", "gsap", "sanity", "resend", "react"], client: { it: "Autonoleggio", en: "Car rental" } },
-  "yacht-guida-vocale": { year: 2026, owner: "client", status: "demo", stack: ["threejs", "livekit", "claude", "deepgram", "elevenlabs"], client: { it: "Cantiere navale", en: "Shipyard" } },
+  "yacht-guida-vocale": { year: 2026, owner: "client", status: "demo", stack: ["threejs", "blender", "livekit", "claude", "deepgram", "elevenlabs"], client: { it: "Cantiere navale", en: "Shipyard" } },
   vabbe: { year: 2026, owner: "mine", status: "development", stack: ["nextjs", "hono", "cloudflare", "stripe", "react"], client: { it: "Progetto mio", en: "Personal" } },
   tamamoshi: { year: 2026, owner: "mine", status: "development", stack: ["expo", "llama", "sqlite", "react"], client: { it: "Progetto mio", en: "Personal" } },
 };

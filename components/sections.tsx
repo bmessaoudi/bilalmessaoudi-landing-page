@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { Fragment, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { SITE, type Copy } from "@/lib/content/copy";
 import { TECH, TECH_AREAS, TECH_COLOR, TECH_IDS, type TechId } from "@/lib/content/tech";
 import type { Project, Status } from "@/lib/content/types";
@@ -14,7 +14,11 @@ type Props = {
   onOpen: (index: number) => void;
   onHighlight: (index: number | null) => void;
   /** Pull out the books of every project that uses a technology. */
-  onHighlightMany: (indices: number[] | null) => void;
+  /** The technology clicked in the list (or on a poster in the room), kept until clicked again. */
+  pinnedTech: TechId | null;
+  onPinTech: (id: TechId | null) => void;
+  /** The technology to circle on the posters: the hovered one, else the pinned one. */
+  onShowTech: (id: TechId | null) => void;
 };
 
 // Paper sections leave the right 44% of a desktop screen to the room's window, and the top 30% of a phone.
@@ -24,16 +28,14 @@ const paperStep =
 const sectionTitle = "mb-5 text-[clamp(1.9rem,2.9vw,2.6rem)] font-extrabold leading-tight tracking-[-0.01em]";
 const prose = "max-w-[60ch] text-[17px] leading-[1.65] wide:text-lg";
 
-export function Sections({ copy, projects, inert, onOpen, onHighlight, onHighlightMany }: Props) {
+export function Sections({ copy, projects, inert, onOpen, onHighlight, pinnedTech, onPinTech, onShowTech }: Props) {
   // hovered wins over tapped, so a pinned technology does not get in the way of the mouse
   const [hoverTech, setHoverTech] = useState<TechId | null>(null);
-  const [pinnedTech, setPinnedTech] = useState<TechId | null>(null);
   const tech = hoverTech ?? pinnedTech;
+  useEffect(() => onShowTech(tech), [tech, onShowTech]);
   const pickTech = (next: TechId | null, pinned: boolean) => {
-    if (pinned) setPinnedTech(next);
+    if (pinned) onPinTech(next);
     else setHoverTech(next);
-    const shown = next ?? (pinned ? hoverTech : pinnedTech);
-    onHighlightMany(shown ? projects.flatMap((p, i) => (p.stack.includes(shown) ? [i] : [])) : null);
   };
 
   return (
@@ -259,29 +261,27 @@ function TechList({
                   <Fragment key={id}>
                   {k > 0 && " "}
                   <span className="whitespace-nowrap">
-                    {n === 0 ? (
-                      <span style={{ color: TECH_COLOR[id] }}>{TECH[id].name}</span>
-                    ) : (
                       <button
                         type="button"
-                        aria-pressed={active === id}
-                        aria-label={`${TECH[id].name}, ${label(n)}`}
+                        aria-pressed={pinned === id}
+                        aria-label={n ? `${TECH[id].name}, ${label(n)}` : TECH[id].name}
                         onPointerEnter={(e) => e.pointerType !== "touch" && onPick(id, false)}
                         onPointerLeave={(e) => e.pointerType !== "touch" && onPick(null, false)}
                         onFocus={() => onPick(id, false)}
                         onBlur={() => onPick(null, false)}
-                        onClick={() => onPick(active === id ? null : id, true)}
+                        onClick={() => onPick(pinned === id ? null : id, true)}
                         style={{ color: TECH_COLOR[id] }}
                         className="group cursor-pointer"
                       >
                         <span className="underline decoration-current/35 decoration-dotted decoration-2 underline-offset-[0.24em] group-hover:decoration-current group-aria-pressed:decoration-solid group-aria-pressed:decoration-current">
                           {active === id ? <mark>{TECH[id].name}</mark> : TECH[id].name}
                         </span>
-                        <sup aria-hidden="true" className="ml-0.5 text-[0.68em] font-medium text-ink-soft">
-                          {n}
-                        </sup>
+                        {n > 0 && (
+                          <sup aria-hidden="true" className="ml-0.5 text-[0.68em] font-medium text-ink-soft">
+                            {n}
+                          </sup>
+                        )}
                       </button>
-                    )}
                     {k < list.length - 1 && ","}
                   </span>
                   </Fragment>
@@ -300,6 +300,13 @@ function TechList({
                     {k < list.length - 1 && ", "}
                   </Fragment>
                 ))}
+                {/* a tool also used outside the projects, like Blender for this room */}
+                {pinned in copy.tech.elsewhere && (
+                  <>
+                    {projects.some((p) => p.stack.includes(pinned)) && ", "}
+                    {copy.tech.elsewhere[pinned as keyof typeof copy.tech.elsewhere]}
+                  </>
+                )}
               </p>
             )}
           </div>

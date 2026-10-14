@@ -1,6 +1,8 @@
 import * as THREE from "three";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { POSTERS, posterGrid } from "@/lib/content/posters";
+import { TECH, type TechId } from "@/lib/content/tech";
 import type { LogLine, SectionId } from "@/lib/content/types";
 
 /**
@@ -11,7 +13,7 @@ import type { LogLine, SectionId } from "@/lib/content/types";
 
 export type Frame = { x: number; y: number; w: number; h: number };
 
-export type RoomPick = { type: "book"; index: number } | { type: "section"; id: SectionId };
+export type RoomPick = { type: "book"; index: number } | { type: "section"; id: SectionId } | { type: "tech"; id: TechId };
 
 export type RoomOptions = {
   canvas: HTMLCanvasElement;
@@ -33,8 +35,8 @@ export type Room = {
   highlightBook: (index: number | number[] | null) => void;
   /** Move the camera to a book, or back to the scroll pose with null. */
   focusBook: (index: number | null) => void;
-  /** Turn the camera to the whole bookshelf (a technology is picked), or back to the scroll pose. */
-  lookAtShelf: (on: boolean) => void;
+  /** Bring the camera close to a technology's logo on the posters, or back with null. */
+  markTech: (id: TechId | null) => void;
   /** Low resolution render that reads as a blur behind an open sheet; rendering stops meanwhile. */
   setBlur: (on: boolean) => void;
   resize: () => void;
@@ -52,7 +54,7 @@ const POSES: Record<SectionId, Pose> = {
   contatti: { p: [-0.25, 1.9, 2.2], t: [-0.4, 0.9, -0.2] },
 };
 
-type Target = { root: THREE.Object3D; label: string; book?: number; go?: SectionId; clawd?: boolean };
+type Target = { root: THREE.Object3D; label: string; book?: number; go?: SectionId; clawd?: boolean; poster?: number };
 
 export function createRoom(opts: RoomOptions): Room {
   const { canvas, reducedMotion: reduce } = opts;
@@ -217,10 +219,10 @@ export function createRoom(opts: RoomOptions): Room {
     add("map_frame", { label: opts.labels.map, go: "chi" });
     add("controller", { label: opts.labels.pad, go: "chi" });
     add("arc_reactor", { label: opts.labels.ironman, go: "chi" });
-    for (const p of ["poster_main", "poster_b", "poster_c"]) {
-      add(p, { label: opts.labels.posters, go: "stack" });
-      add(`${p}_frame`, { label: opts.labels.posters, go: "stack" });
-    }
+    POSTERS.forEach((p, i) => {
+      add(p.file, { label: opts.labels.posters, go: "stack", poster: i });
+      add(`${p.file}_frame`, { label: opts.labels.posters, go: "stack" });
+    });
 
     built = true;
     last = performance.now();
@@ -236,8 +238,6 @@ export function createRoom(opts: RoomOptions): Room {
   const cur = { p: new THREE.Vector3(...POSES.ciao.p), t: new THREE.Vector3(...POSES.ciao.t) };
   const want = { p: cur.p.clone(), t: cur.t.clone() };
   let override: { p: THREE.Vector3; t: THREE.Vector3 } | null = null;
-  // a softer override under the book one: the whole shelf while a technology is picked
-  let shelf: { p: THREE.Vector3; t: THREE.Vector3 } | null = null;
   let active: SectionId = "ciao";
   let blurred = false;
 
@@ -270,6 +270,7 @@ export function createRoom(opts: RoomOptions): Room {
     camera.fov = 38 + 14 * tall;
     camera.setViewOffset(fw, fh, -view.x, -view.y, W, H);
     camera.updateProjectionMatrix();
+    if (marked) zoom = logoPose(marked);
     invalidate();
   }
 
@@ -283,6 +284,8 @@ export function createRoom(opts: RoomOptions): Room {
   const ray = new THREE.Raycaster();
   const ndc = new THREE.Vector2();
   let hovered: Target | null = null;
+  // where the last pick hit, so a click on a poster can tell which logo it landed on
+  const hitPoint = new THREE.Vector3();
   function pick(x: number, y: number) {
     ndc.set((x / W) * 2 - 1, -(y / H) * 2 + 1);
     ray.setFromCamera(ndc, camera);
@@ -291,6 +294,7 @@ export function createRoom(opts: RoomOptions): Room {
       true,
     )[0];
     if (!hit) return null;
+    hitPoint.copy(hit.point);
     return (
       targets.find((t) => {
         let o: THREE.Object3D | null = hit.object;
@@ -319,7 +323,9 @@ export function createRoom(opts: RoomOptions): Room {
       if (h?.clawd) wave();
       invalidate();
     }
-    opts.onHover(h ? { label: h.label, x: e.clientX, y: e.clientY } : null);
+    // on a poster the label names the logo under the pointer
+    const tech = h?.poster !== undefined ? techAt(h.poster, hitPoint) : null;
+    opts.onHover(h ? { label: tech ? TECH[tech].name : h.label, x: e.clientX, y: e.clientY } : null);
   };
   const onLeave = () => {
     hovered = null;
@@ -333,12 +339,43 @@ export function createRoom(opts: RoomOptions): Room {
     if (!h) return;
     opts.onHover(null);
     if (h.clawd) wave();
+    const tech = h.poster !== undefined ? techAt(h.poster, hitPoint) : null;
     if (h.book !== undefined) opts.onPick({ type: "book", index: h.book });
+    else if (tech) opts.onPick({ type: "tech", id: tech });
     else if (h.go) opts.onPick({ type: "section", id: h.go });
   };
   canvas.addEventListener("pointermove", onMove);
   canvas.addEventListener("pointerleave", onLeave);
   canvas.addEventListener("click", onClick);
+
+  // ---------- the posters ----------
+  function techAt(posterIndex: number, point: THREE.Vector3): TechId | null {
+    const p = POSTERS[posterIndex];
+    const g = posterGrid(p);
+    const u = ((point.x - (p.x - p.w / 2)) / p.w) * p.px;
+    const v = ((p.y + p.h / 2 - point.y) / p.h) * p.py;
+    const col = Math.floor((u - g.margin) / g.cw);
+    const row = Math.floor((v - g.margin) / g.ch);
+    if (col < 0 || col >= p.cols || row < 0 || row >= g.rows) return null;
+    return p.ids[row * p.cols + col] ?? null;
+  }
+
+  // a picked technology brings the camera close to its logo on the posters
+  let marked: TechId | null = null;
+  let zoom: { p: THREE.Vector3; t: THREE.Vector3 } | null = null;
+  function logoPose(id: TechId) {
+    const p = POSTERS.find((q) => q.ids.includes(id));
+    if (!p) return null;
+    const g = posterGrid(p);
+    const { cx, cy } = g.cell(p.ids.indexOf(id));
+    const m = p.w / p.px;
+    const t = new THREE.Vector3(p.x - p.w / 2 + cx * m, p.y + p.h / 2 - cy * m, -0.62 + 0.014);
+    // about 34 x 28 cm of wall in view, whatever the frame's shape: the logo big, its neighbours
+    // around it. A touch off axis so the print still reads as a print.
+    const half = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+    const d = Math.max(0.17 / (half * camera.aspect), 0.14 / half);
+    return { p: new THREE.Vector3(t.x + d * 0.12, t.y + d * 0.04, t.z + d), t };
+  }
 
   // ---------- render on demand ----------
   let raf = 0;
@@ -361,7 +398,7 @@ export function createRoom(opts: RoomOptions): Room {
       busy = true;
     }
 
-    const goal = override ?? shelf ?? want;
+    const goal = override ?? zoom ?? want;
     const k = reduce ? 1 : 1 - Math.exp(-dt * 5);
     cur.p.lerp(goal.p, k);
     cur.t.lerp(goal.t, k);
@@ -433,8 +470,10 @@ export function createRoom(opts: RoomOptions): Room {
       syncBooks();
       invalidate();
     },
-    lookAtShelf(on) {
-      shelf = on ? poseOf("lavori") : null;
+    markTech(id) {
+      if (id === marked) return;
+      marked = id;
+      zoom = id ? logoPose(id) : null;
       invalidate();
     },
     setBlur(on) {
