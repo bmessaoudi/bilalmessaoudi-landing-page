@@ -77,6 +77,16 @@ mark {
   background: linear-gradient(0deg, rgb(15 17 23 / 0.9) 0, rgb(15 17 23 / 0.62) 34%, rgb(15 17 23 / 0) 62%);
 }
 
+/* --w is how far the room is into its window (0 full screen, 1 windowed), set on scroll.
+   While the room grows or shrinks, the text of the side it is leaving fades out
+   instead of lying on top of the scene. Without JS --w is unset and everything stays visible. */
+.on-paper {
+  opacity: calc(var(--w, 1) * 2 - 1);
+}
+.on-room {
+  opacity: calc(1 - var(--w, 0) * 2);
+}
+
 /* project sheet: from the bottom on phones, from the right on desktop */
 .sheet {
   transform: translateY(102%);

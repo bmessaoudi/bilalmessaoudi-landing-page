@@ -17,7 +17,7 @@ type Props = {
 // Paper sections leave the right 44% of a desktop screen to the room's window, and the top 30% of a phone.
 // main ignores the pointer so the canvas stays clickable where there is no text.
 const paperStep =
-  "relative min-h-svh px-[var(--pad)] pt-[calc(60px+30svh+40px)] pb-24 wide:pt-[132px] wide:pb-32 wide:pr-[calc(44vw+48px)]";
+  "on-paper relative min-h-svh px-[var(--pad)] pt-[calc(60px+30svh+40px)] pb-24 wide:pt-[132px] wide:pb-32 wide:pr-[calc(44vw+48px)]";
 const sectionTitle = "mb-5 text-[clamp(1.9rem,2.9vw,2.6rem)] font-extrabold leading-tight tracking-[-0.01em]";
 const prose = "max-w-[60ch] text-[17px] leading-[1.65] wide:text-lg";
 
@@ -27,7 +27,7 @@ export function Sections({ copy, projects, inert, onOpen, onHighlight }: Props) 
       <StickerDefs />
 
       {/* ---------- arrival: the room fills the screen, a few lines sit in its corner ---------- */}
-      <section id="ciao" className="flex min-h-svh flex-col justify-end px-[var(--pad)] pt-24 pb-[calc(32px+env(safe-area-inset-bottom,0px))] text-light wide:pb-14">
+      <section id="ciao" className="on-room flex min-h-svh flex-col justify-end px-[var(--pad)] pt-24 pb-[calc(32px+env(safe-area-inset-bottom,0px))] text-light wide:pb-14">
         <div className="pointer-events-auto max-w-[34rem]">
           <h1 className="text-[clamp(1.9rem,3.4vw,2.9rem)] font-extrabold leading-tight tracking-[-0.01em]">{copy.ciao.name}</h1>
           <p className="mt-3 text-lg text-light/90">
@@ -157,7 +157,7 @@ export function Sections({ copy, projects, inert, onOpen, onHighlight }: Props) 
       </section>
 
       {/* ---------- contact: the room opens up again ---------- */}
-      <section id="contatti" className="flex min-h-svh flex-col justify-end px-[var(--pad)] pt-24 pb-[calc(32px+env(safe-area-inset-bottom,0px))] text-light wide:pb-14">
+      <section id="contatti" className="on-room flex min-h-svh flex-col justify-end px-[var(--pad)] pt-24 pb-[calc(32px+env(safe-area-inset-bottom,0px))] text-light wide:pb-14">
         <div className="pointer-events-auto max-w-[40rem]">
           <h2 className={sectionTitle}>{copy.contatti.title}</h2>
           <p className="text-lg text-light/90">{copy.contatti.lead}</p>

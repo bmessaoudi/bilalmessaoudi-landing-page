@@ -160,6 +160,8 @@ export function Portfolio({ locale, copy, projects, fonts }: Props) {
       stage.style.zIndex = w > 0.5 ? "3" : "0";
     }
     if (scrimRef.current) scrimRef.current.style.opacity = String(1 - w);
+    // the text fades while the room crosses it, see .on-paper and .on-room
+    document.documentElement.style.setProperty("--w", String(w));
     setPaper(w > 0.5);
   }, []);
 
