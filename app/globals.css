@@ -1,95 +1,106 @@
 @import "tailwindcss";
 
+/* The page is one dusk-lit room. Text sits on the room's own colours:
+   night for the walls, light for text over the scene, lamp for the one warm accent,
+   paper and ink for the project sheets pulled off the shelf. */
+@theme {
+  --color-night: #1b1f29;
+  --color-light: #f2f0eb;
+  --color-light-soft: #b7bbc6;
+  --color-lamp: #ffbe73;
+  --color-paper: #ecebe6;
+  --color-ink: #1a1d25;
+  --color-ink-soft: #5a5f6c;
+  --color-rule: #c9c8c1;
+  --color-lamp-ink: #9a5a12;
+
+  --font-sans: var(--font-mona), "Helvetica Neue", Arial, sans-serif;
+  --font-display: var(--font-hubot), var(--font-mona), "Helvetica Neue", Arial, sans-serif;
+  --font-hand: var(--font-shantell), "Comic Sans MS", cursive;
+  --font-mono: var(--font-plex), ui-monospace, Menlo, monospace;
+
+  --breakpoint-wide: 47.5rem;
+}
+
 :root {
-  --background: #050505;
-  --foreground: #ededed;
-  --accent-gradient: linear-gradient(135deg, #007BFF, #8A2BE2);
+  color-scheme: dark;
+  --pad: clamp(16px, 4.5vw, 64px);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --animate-star-movement-bottom: star-movement-bottom 6s linear infinite alternate;
-  --animate-star-movement-top: star-movement-top 6s linear infinite alternate;
-
-  @keyframes star-movement-bottom {
-    0% {
-      transform: translate(0%, 0%);
-      opacity: 1;
-    }
-    100% {
-      transform: translate(-100%, 0%);
-      opacity: 0;
-    }
-  }
-
-  @keyframes star-movement-top {
-    0% {
-      transform: translate(0%, 0%);
-      opacity: 1;
-    }
-    100% {
-      transform: translate(100%, 0%);
-      opacity: 0;
-    }
-  }
+html {
+  scroll-behavior: smooth;
 }
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
-}
-
-::selection {
-  background: rgba(0, 123, 255, 0.3);
-  color: #fff;
-}
-
-::-webkit-scrollbar {
-  width: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: #050505;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #333;
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #555;
-}
-
-/* Gradient text utility */
-.gradient-text {
-  background: var(--accent-gradient);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-/* Shimmer animation for dividers */
-@keyframes shimmer {
-  0%, 100% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-}
-
-/* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* the page itself is paper; the room only covers it at the start and at the end */
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-lamp);
+  outline-offset: 3px;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-stretch: 118%;
+  text-wrap: balance;
+}
+
+/* handwritten notes: Shantell at full informality, a little bounce */
+.font-hand {
+  font-variation-settings:
+    "INFM" 100,
+    "BNCE" 45;
+}
+
+/* a marker stroke behind a few words */
+mark {
+  color: inherit;
+  background: linear-gradient(transparent 52%, rgb(255 190 115 / 0.85) 52%, rgb(255 190 115 / 0.85) 90%, transparent 90%);
+  padding: 0 0.12em;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+/* darkens the bottom of the room, where the name and the contact sit */
+.scrim {
+  background: linear-gradient(0deg, rgb(15 17 23 / 0.9) 0, rgb(15 17 23 / 0.62) 34%, rgb(15 17 23 / 0) 62%);
+}
+
+/* project sheet: from the bottom on phones, from the right on desktop */
+.sheet {
+  transform: translateY(102%);
+  visibility: hidden;
+  transition:
+    transform 0.45s cubic-bezier(0.2, 0.7, 0.2, 1),
+    visibility 0s linear 0.45s;
+}
+.sheet[data-open="true"] {
+  transform: none;
+  visibility: visible;
+  transition:
+    transform 0.45s cubic-bezier(0.2, 0.7, 0.2, 1),
+    visibility 0s;
+}
+@media (min-width: 47.5rem) {
+  .sheet {
+    transform: translateX(102%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sheet,
+  .sheet[data-open="true"] {
+    transition: none;
   }
 }

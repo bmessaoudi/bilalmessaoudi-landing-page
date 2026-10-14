@@ -1,0 +1,74 @@
+[
+  {
+    "slug": "ricorsi-da-pdf",
+    "spine": "Decreti",
+    "color": "#C8634F",
+    "row": 3
+  },
+  {
+    "slug": "copilota-bandi",
+    "spine": "Bandi",
+    "color": "#7FA58D",
+    "row": 3
+  },
+  {
+    "slug": "knowledge-mcp",
+    "spine": "knowledge-mcp",
+    "color": "#4E6E8E",
+    "row": 3
+  },
+  {
+    "slug": "tg-sniffer",
+    "spine": "tg-sniffer",
+    "color": "#3E5C76",
+    "row": 3
+  },
+  {
+    "slug": "lead-finder",
+    "spine": "Lead finder",
+    "color": "#B98A5E",
+    "row": 3
+  },
+  {
+    "slug": "gestionale-eventi",
+    "spine": "Eventi",
+    "color": "#E0A458",
+    "row": 2
+  },
+  {
+    "slug": "borsa-calciatori",
+    "spine": "Calciatori",
+    "color": "#2F4A3A",
+    "row": 2
+  },
+  {
+    "slug": "academy-online",
+    "spine": "Academy",
+    "color": "#6B5B95",
+    "row": 2
+  },
+  {
+    "slug": "noleggio-di-lusso",
+    "spine": "Noleggio",
+    "color": "#1E2230",
+    "row": 1
+  },
+  {
+    "slug": "yacht-guida-vocale",
+    "spine": "Yacht a vela",
+    "color": "#D8D3C6",
+    "row": 1
+  },
+  {
+    "slug": "vabbe",
+    "spine": "Vabbè",
+    "color": "#E6CF62",
+    "row": 0
+  },
+  {
+    "slug": "tamamoshi",
+    "spine": "Tamamoshi",
+    "color": "#A8C686",
+    "row": 0
+  }
+]
