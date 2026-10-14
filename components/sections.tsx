@@ -52,11 +52,15 @@ export function Sections({ copy, projects, inert, onOpen, onHighlight }: Props) 
 
           {(["client", "mine"] as const).map((owner) => (
             <div key={owner} className="mt-12">
-              <div className="mb-3 flex flex-wrap items-baseline gap-x-14 gap-y-3">
+              <div className="mb-3 flex flex-wrap items-baseline gap-x-14 gap-y-7">
                 <h3 className="text-xl font-extrabold">{copy.owners[owner]}</h3>
-                <Note arrow="left" className="ml-14 wide:ml-0">
-                  {copy.ownerNotes[owner]}
-                </Note>
+                {/* beside the heading on desktop, under it on phones */}
+                <span className="hidden wide:inline">
+                  <Note arrow="left">{copy.ownerNotes[owner]}</Note>
+                </span>
+                <span className="ml-12 wide:hidden">
+                  <Note>{copy.ownerNotes[owner]}</Note>
+                </span>
               </div>
               <ul className="border-t-2 border-ink" onPointerLeave={() => onHighlight(null)}>
                 {projects.map((p, i) =>
@@ -204,12 +208,12 @@ function Thumb({ project, tilt, soon }: { project: Project; tilt: number; soon: 
     <span
       aria-hidden="true"
       style={{ transform: `rotate(${tilt}deg)` }}
-      className="hidden h-[54px] w-[84px] shrink-0 items-center justify-center overflow-hidden border-[3px] border-white bg-paper shadow-[0_3px_10px_rgb(26_29_37/0.22)] transition-transform duration-200 group-hover:!rotate-0 group-hover:scale-110 min-[420px]:flex wide:h-[62px] wide:w-[96px]"
+      className="flex h-[40px] w-[62px] shrink-0 items-center justify-center overflow-hidden border-2 border-white bg-paper shadow-[0_3px_10px_rgb(26_29_37/0.22)] transition-transform duration-200 group-hover:!rotate-0 group-hover:scale-110 min-[420px]:h-[54px] min-[420px]:w-[84px] min-[420px]:border-[3px] wide:h-[62px] wide:w-[96px]"
     >
       {shot ? (
         <Image src={shot.src} alt="" width={192} height={124} sizes="96px" className="h-full w-full object-cover object-top" />
       ) : (
-        <span className="font-hand px-1 text-center text-[13px] leading-tight text-lamp-ink">{soon}</span>
+        <span className="font-hand px-1 text-center text-[11px] leading-tight text-lamp-ink min-[420px]:text-[13px]">{soon}</span>
       )}
     </span>
   );

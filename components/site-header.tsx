@@ -13,7 +13,7 @@ const TILT = [-2, 1.5, -1, 2];
 // the current section gets a hand-drawn ring
 function Circled({ className }: { className: string }) {
   return (
-    <svg aria-hidden="true" viewBox="0 0 120 50" preserveAspectRatio="none" className={`pointer-events-none absolute -inset-x-3 -inset-y-2 h-[calc(100%+16px)] w-[calc(100%+24px)] ${className}`}>
+    <svg aria-hidden="true" viewBox="0 0 120 50" preserveAspectRatio="none" className={`pointer-events-none absolute -inset-x-1.5 -inset-y-1.5 h-[calc(100%+12px)] w-[calc(100%+12px)] wide:-inset-x-3 wide:-inset-y-2 wide:h-[calc(100%+16px)] wide:w-[calc(100%+24px)] ${className}`}>
       <path d="M64 6C34 3 6 10 5 25s28 21 57 20 54-7 53-21C114 9 86 4 52 6" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
     </svg>
   );
@@ -40,7 +40,7 @@ function Squiggle({ className }: { className: string }) {
 // the flag of the language you switch to, as a small sticker
 function FlagUK() {
   return (
-    <svg aria-hidden="true" viewBox="0 0 60 30" preserveAspectRatio="xMidYMid slice" className="block h-[18px] w-[27px] rounded-[4px]">
+    <svg aria-hidden="true" viewBox="0 0 60 30" preserveAspectRatio="xMidYMid slice" className="block h-4 w-6 rounded-[3px] wide:h-[18px] wide:w-[27px]">
       <clipPath id="uk-diag">
         <path d="M30 15h30v15zv15H0zH0V0zV0h30z" />
       </clipPath>
@@ -55,7 +55,7 @@ function FlagUK() {
 
 function FlagIT() {
   return (
-    <svg aria-hidden="true" viewBox="0 0 3 2" className="block h-[18px] w-[27px] rounded-[4px]">
+    <svg aria-hidden="true" viewBox="0 0 3 2" className="block h-4 w-6 rounded-[3px] wide:h-[18px] wide:w-[27px]">
       <path fill="#009246" d="M0 0h1v2H0z" />
       <path fill="#f4f5f0" d="M1 0h1v2H1z" />
       <path fill="#ce2b37" d="M2 0h1v2H2z" />
@@ -74,9 +74,9 @@ export function SiteHeader({ copy, locale, active, paper, inert }: Props) {
       }`}
     >
       <a href="#ciao" aria-label="devbybil, Bilal Messaoudi" className="no-underline">
-        <Logo className={`h-8 transition-colors wide:h-9 ${paper ? "text-lamp-ink" : "text-lamp"}`} />
+        <Logo className={`h-7 transition-colors wide:h-9 ${paper ? "text-lamp-ink" : "text-lamp"}`} />
       </a>
-      <nav aria-label={copy.nav.sections} className="ml-auto flex items-center gap-4 text-sm wide:gap-7 wide:text-[15px]">
+      <nav aria-label={copy.nav.sections} className="ml-auto flex items-center gap-3 text-[13px] min-[400px]:gap-4 min-[400px]:text-sm wide:gap-7 wide:text-[15px]">
         {LINKS.map((id, i) => (
           <a
             key={id}
@@ -97,7 +97,7 @@ export function SiteHeader({ copy, locale, active, paper, inert }: Props) {
           lang={locale === "it" ? "en" : "it"}
           aria-label={copy.otherLocale.name}
           title={copy.otherLocale.name}
-          className="ml-1 block rotate-6 rounded-[4px] shadow-[0_2px_6px_rgb(0_0_0/0.3)] ring-2 ring-[#fffdf8] transition-transform duration-200 hover:scale-110 hover:rotate-0"
+          className="block shrink-0 rotate-6 rounded-[4px] shadow-[0_2px_6px_rgb(0_0_0/0.3)] ring-2 ring-[#fffdf8] transition-transform duration-200 hover:scale-110 hover:rotate-0"
         >
           {locale === "it" ? <FlagUK /> : <FlagIT />}
         </Link>
