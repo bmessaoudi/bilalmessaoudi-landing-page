@@ -121,6 +121,8 @@ const it = {
   },
   chi: {
     title: "Chi sono",
+    photoAlt: "Bilal Messaoudi sorride all'aperto, con occhiali tondi e camicia nera",
+    photoCaption: "io, prima del caffè",
     body: [
       {
         text: "Sviluppo **dal 2019**. Ho cominciato come sviluppatore junior in un'azienda che fa gestionali WMS per la logistica. Nel 2023 mi sono messo in proprio: prima siti per piccole attività e bot Telegram, poi gestionali per eventi, formazione e marketplace.",
@@ -273,6 +275,8 @@ const en: Copy = {
   },
   chi: {
     title: "About",
+    photoAlt: "Bilal Messaoudi smiling outdoors, wearing round glasses and a black shirt",
+    photoCaption: "me, before coffee",
     body: [
       {
         text: "I have been writing software **since 2019**. I started as a junior developer at a company that builds WMS software for logistics. In 2023 I went freelance: first websites for small businesses and Telegram bots, then business systems for events, training and marketplaces.",

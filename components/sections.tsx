@@ -156,6 +156,14 @@ export function Sections({ copy, projects, inert, onOpen, onHighlight, pinnedTec
         <div className="pointer-events-auto">
           <h2 className={sectionTitle}>{copy.chi.title}</h2>
           <div className={prose}>
+            <figure className="relative float-right mt-1 mb-6 ml-5 w-[38%] max-w-[15rem] rotate-3 bg-white p-2 pb-2.5 shadow-[0_10px_24px_-10px_rgba(26,29,37,0.45)] wide:-mt-16 wide:ml-8 wide:p-2.5 wide:pb-3">
+              {/* a strip of tape holding the print on the paper */}
+              <span aria-hidden="true" className="absolute -top-3 left-1/2 h-6 w-20 -translate-x-1/2 -rotate-6 bg-lamp/45" />
+              <Image src="/bilal.jpg" alt={copy.chi.photoAlt} width={720} height={720} sizes="(min-width: 47.5rem) 240px, 38vw" className="aspect-square w-full object-cover" />
+              <figcaption className="font-hand mt-2 text-center text-[14px] leading-tight text-balance text-ink-soft wide:text-[16px]">
+                {copy.chi.photoCaption}
+              </figcaption>
+            </figure>
             {copy.chi.body.map((para) => (
               <div key={para.text} className="mb-5">
                 {para.sticker && <Sticker name={para.sticker} tilt={8} className="float-right -mt-3 ml-4" />}
