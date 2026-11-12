@@ -1,0 +1,17 @@
+# Linguist: le statistiche dei linguaggi su GitHub devono riflettere il sito (TypeScript),
+# non gli strumenti che gli stanno attorno.
+
+# Script Blender e generatori degli asset 3D: costruiscono la stanza, non fanno parte del sito
+blender/** linguist-vendored
+
+# Skill per agenti AI vendorizzata da un repository esterno
+.agents/** linguist-vendored
+
+# Decoder Draco copiato da three.js
+public/draco/** linguist-vendored
+
+# Note di progetto
+design-idea.md linguist-documentation
+
+# File generati
+pnpm-lock.yaml linguist-generated
