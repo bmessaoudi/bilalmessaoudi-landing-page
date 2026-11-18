@@ -24,7 +24,6 @@ export const TECH = {
   claude: { name: "Claude", hex: "#D97757", area: "ai", icon: "claude" },
   mcp: { name: "MCP", hex: "#000000", area: "ai", icon: "modelcontextprotocol" },
   firecrawl: { name: "Firecrawl", hex: "#FA5D19", area: "ai" },
-  playwright: { name: "Playwright", hex: "#2EAD33", area: "ai" },
   livekit: { name: "LiveKit", hex: "#000000", area: "ai", icon: "livekit" },
   deepgram: { name: "Deepgram", hex: "#13EF93", area: "ai", icon: "deepgram" },
   elevenlabs: { name: "ElevenLabs", hex: "#000000", area: "ai", icon: "elevenlabs" },
